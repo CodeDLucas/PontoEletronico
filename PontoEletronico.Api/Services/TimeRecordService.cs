@@ -26,7 +26,7 @@ public class TimeRecordService : ITimeRecordService
                 return ApiResponseDto<TimeRecordResponseDto>.ErrorResult("Usuário não encontrado ou inativo");
             }
 
-            var timestamp = request.Timestamp ?? DateTime.Now;
+            var timestamp = request.Timestamp ?? DateTime.UtcNow;
 
             var validationResult = await ValidateTimeRecord(userId, request.Type, timestamp);
             if (!validationResult.IsValid)
@@ -110,8 +110,8 @@ public class TimeRecordService : ITimeRecordService
     {
         try
         {
-            var startDate = filter.StartDate?.Date ?? DateTime.Today.AddDays(-30);
-            var endDate = filter.EndDate?.Date ?? DateTime.Today;
+            var startDate = filter.StartDate?.Date ?? DateTime.UtcNow.Date.AddDays(-30);
+            var endDate = filter.EndDate?.Date ?? DateTime.UtcNow.Date;
 
             var timeRecords = await _context.TimeRecords
                 .Where(tr => tr.UserId == userId &&
@@ -209,9 +209,15 @@ public class TimeRecordService : ITimeRecordService
     {
         try
         {
-            var today = DateTime.Today;
+            // Use UTC para obter o dia atual, mas compare apenas a data
+            var utcNow = DateTime.UtcNow;
+            var startOfDay = new DateTime(utcNow.Year, utcNow.Month, utcNow.Day, 0, 0, 0, DateTimeKind.Utc);
+            var endOfDay = startOfDay.AddDays(1);
+
             var timeRecords = await _context.TimeRecords
-                .Where(tr => tr.UserId == userId && tr.Timestamp.Date == today)
+                .Where(tr => tr.UserId == userId &&
+                           tr.Timestamp >= startOfDay &&
+                           tr.Timestamp < endOfDay)
                 .OrderBy(tr => tr.Timestamp)
                 .Select(tr => new TimeRecordListDto
                 {

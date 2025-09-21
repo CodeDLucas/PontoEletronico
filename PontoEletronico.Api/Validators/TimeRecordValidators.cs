@@ -25,7 +25,7 @@ public class TimeRecordCreateValidator : AbstractValidator<TimeRecordCreateDto>
     {
         if (!timestamp.HasValue) return true;
 
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         var sevenDaysAgo = now.AddDays(-7);
 
         return timestamp.Value >= sevenDaysAgo && timestamp.Value <= now.AddMinutes(5);
@@ -47,12 +47,12 @@ public class TimeRecordFilterValidator : AbstractValidator<TimeRecordFilterDto>
             .When(x => x.StartDate.HasValue && x.EndDate.HasValue);
 
         RuleFor(x => x.StartDate)
-            .LessThanOrEqualTo(DateTime.Today)
+            .LessThanOrEqualTo(DateTime.UtcNow.Date)
             .WithMessage("Data de início não pode ser no futuro")
             .When(x => x.StartDate.HasValue);
 
         RuleFor(x => x.EndDate)
-            .LessThanOrEqualTo(DateTime.Today)
+            .LessThanOrEqualTo(DateTime.UtcNow.Date)
             .WithMessage("Data de fim não pode ser no futuro")
             .When(x => x.EndDate.HasValue);
 
