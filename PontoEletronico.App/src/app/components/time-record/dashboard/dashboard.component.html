@@ -1,0 +1,99 @@
+<div class="dashboard-container">
+  <mat-toolbar color="primary" class="dashboard-toolbar">
+    <span>Sistema de Ponto Eletrônico</span>
+    <span class="toolbar-spacer"></span>
+    <span *ngIf="currentUser$ | async as user" class="user-info">
+      Olá, {{ user.fullName }}!
+    </span>
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Sair</span>
+      </button>
+    </mat-menu>
+  </mat-toolbar>
+
+  <div class="dashboard-content">
+    <div class="status-section">
+      <mat-card class="status-card">
+        <mat-card-header>
+          <mat-card-title>Status do Dia</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="status-display">
+            <mat-chip [color]="getTodayStatusColor()" selected>
+              {{ getTodayStatusText() }}
+            </mat-chip>
+          </div>
+          <div class="quick-actions">
+            <button mat-raised-button color="primary"
+                    (click)="navigateToTimeClock()"
+                    class="clock-button">
+              <mat-icon>access_time</mat-icon>
+              Registrar Ponto
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="records-section">
+      <mat-card class="records-card">
+        <mat-card-header>
+          <mat-card-title>Registros Recentes</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="isLoading" class="loading-spinner">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+
+          <div *ngIf="!isLoading && recentRecords.length === 0" class="no-records">
+            <mat-icon>event_note</mat-icon>
+            <p>Nenhum registro encontrado</p>
+          </div>
+
+          <mat-table *ngIf="!isLoading && recentRecords.length > 0"
+                     [dataSource]="recentRecords" class="records-table">
+            <ng-container matColumnDef="date">
+              <mat-header-cell *matHeaderCellDef>Data</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                {{ record.date | date:'dd/MM/yyyy' }}
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="entryTime">
+              <mat-header-cell *matHeaderCellDef>Entrada</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                {{ record.entryTime | date:'HH:mm' }}
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="exitTime">
+              <mat-header-cell *matHeaderCellDef>Saída</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                <span *ngIf="record.exitTime">{{ record.exitTime | date:'HH:mm' }}</span>
+                <mat-chip *ngIf="!record.exitTime" color="primary" selected>
+                  Em andamento
+                </mat-chip>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="totalHours">
+              <mat-header-cell *matHeaderCellDef>Total</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                <span *ngIf="record.totalHours">{{ record.totalHours }}h</span>
+                <span *ngIf="!record.totalHours">-</span>
+              </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="['date', 'entryTime', 'exitTime', 'totalHours']"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: ['date', 'entryTime', 'exitTime', 'totalHours']"></mat-row>
+          </mat-table>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

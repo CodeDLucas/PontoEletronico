@@ -1,0 +1,82 @@
+<div class="register-container">
+  <mat-card class="register-card">
+    <mat-card-header>
+      <mat-card-title>Criar Conta</mat-card-title>
+      <mat-card-subtitle>Registre-se para acessar o sistema</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nome Completo</mat-label>
+          <input matInput formControlName="fullName" placeholder="Digite seu nome completo">
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error>{{ getFullNameErrorMessage() }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Código do Funcionário</mat-label>
+          <input matInput formControlName="employeeCode" placeholder="Digite seu código de funcionário">
+          <mat-icon matSuffix>badge</mat-icon>
+          <mat-error>{{ getEmployeeCodeErrorMessage() }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="Digite seu email">
+          <mat-icon matSuffix>email</mat-icon>
+          <mat-error>{{ getEmailErrorMessage() }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Senha</mat-label>
+          <input matInput formControlName="password"
+                 [type]="hidePassword ? 'password' : 'text'"
+                 placeholder="Digite sua senha">
+          <button mat-icon-button matSuffix
+                  (click)="hidePassword = !hidePassword"
+                  [attr.aria-label]="'Hide password'"
+                  [attr.aria-pressed]="hidePassword"
+                  type="button">
+            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+          <mat-error>{{ getPasswordErrorMessage() }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirmar Senha</mat-label>
+          <input matInput formControlName="confirmPassword"
+                 [type]="hideConfirmPassword ? 'password' : 'text'"
+                 placeholder="Confirme sua senha">
+          <button mat-icon-button matSuffix
+                  (click)="hideConfirmPassword = !hideConfirmPassword"
+                  [attr.aria-label]="'Hide password'"
+                  [attr.aria-pressed]="hideConfirmPassword"
+                  type="button">
+            <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+          <mat-error>{{ getConfirmPasswordErrorMessage() }}</mat-error>
+        </mat-form-field>
+
+        <div class="actions">
+          <button mat-raised-button color="primary" type="submit"
+                  [disabled]="registerForm.invalid || isLoading"
+                  class="register-button">
+            <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+            <span *ngIf="!isLoading">Criar Conta</span>
+            <span *ngIf="isLoading">Criando...</span>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions style="text-align: center;">
+      <p>
+        Já possui uma conta?
+        <button mat-button color="primary" (click)="navigateToLogin()">
+          Fazer Login
+        </button>
+      </p>
+    </mat-card-actions>
+  </mat-card>
+</div>

@@ -1,0 +1,138 @@
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { AuthService } from '../../../services';
+import { RegisterRequest } from '../../../models';
+
+@Component({
+  selector: 'app-register',
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.scss']
+})
+export class RegisterComponent implements OnInit {
+  registerForm!: FormGroup;
+  isLoading = false;
+  hidePassword = true;
+  hideConfirmPassword = true;
+
+  constructor(
+    private formBuilder: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private snackBar: MatSnackBar
+  ) {}
+
+  ngOnInit(): void {
+    this.createForm();
+  }
+
+  private createForm(): void {
+    this.registerForm = this.formBuilder.group({
+      fullName: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      employeeCode: ['', [Validators.required, Validators.minLength(2)]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]]
+    }, { validators: this.passwordMatchValidator });
+  }
+
+  passwordMatchValidator(form: FormGroup) {
+    const password = form.get('password');
+    const confirmPassword = form.get('confirmPassword');
+
+    if (password && confirmPassword && password.value !== confirmPassword.value) {
+      confirmPassword.setErrors({ passwordMismatch: true });
+    } else {
+      if (confirmPassword?.hasError('passwordMismatch')) {
+        const errors = { ...confirmPassword.errors };
+        delete errors['passwordMismatch'];
+        confirmPassword.setErrors(Object.keys(errors).length ? errors : null);
+      }
+    }
+    return null;
+  }
+
+  onSubmit(): void {
+    if (this.registerForm.valid && !this.isLoading) {
+      this.isLoading = true;
+      const registerData: RegisterRequest = {
+        fullName: this.registerForm.value.fullName,
+        email: this.registerForm.value.email,
+        employeeCode: this.registerForm.value.employeeCode,
+        password: this.registerForm.value.password,
+        confirmPassword: this.registerForm.value.confirmPassword
+      };
+
+      this.authService.register(registerData).subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.showSuccessMessage('Conta criada com sucesso! Faça login para continuar.');
+            this.router.navigate(['/login']);
+          } else {
+            this.showErrorMessage(response.message);
+          }
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Erro no registro:', error);
+          this.showErrorMessage('Erro ao criar conta. Tente novamente.');
+          this.isLoading = false;
+        }
+      });
+    }
+  }
+
+  getFullNameErrorMessage(): string {
+    const control = this.registerForm.get('fullName');
+    if (control?.hasError('required')) return 'Nome completo é obrigatório';
+    if (control?.hasError('minlength')) return 'Nome deve ter pelo menos 2 caracteres';
+    return '';
+  }
+
+  getEmployeeCodeErrorMessage(): string {
+    const control = this.registerForm.get('employeeCode');
+    if (control?.hasError('required')) return 'Código do funcionário é obrigatório';
+    if (control?.hasError('minlength')) return 'Código deve ter pelo menos 2 caracteres';
+    return '';
+  }
+
+  getEmailErrorMessage(): string {
+    const control = this.registerForm.get('email');
+    if (control?.hasError('required')) return 'Email é obrigatório';
+    if (control?.hasError('email')) return 'Email deve ter um formato válido';
+    return '';
+  }
+
+  getPasswordErrorMessage(): string {
+    const control = this.registerForm.get('password');
+    if (control?.hasError('required')) return 'Senha é obrigatória';
+    if (control?.hasError('minlength')) return 'Senha deve ter pelo menos 6 caracteres';
+    return '';
+  }
+
+  getConfirmPasswordErrorMessage(): string {
+    const control = this.registerForm.get('confirmPassword');
+    if (control?.hasError('required')) return 'Confirmação de senha é obrigatória';
+    if (control?.hasError('passwordMismatch')) return 'Senhas não coincidem';
+    return '';
+  }
+
+  navigateToLogin(): void {
+    this.router.navigate(['/login']);
+  }
+
+  private showSuccessMessage(message: string): void {
+    this.snackBar.open(message, 'Fechar', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showErrorMessage(message: string): void {
+    this.snackBar.open(message, 'Fechar', {
+      duration: 5000,
+      panelClass: ['error-snackbar']
+    });
+  }
+}

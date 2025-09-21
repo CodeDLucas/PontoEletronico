@@ -1,0 +1,78 @@
+<div class="time-clock-container">
+  <mat-toolbar color="primary">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span>Registrar Ponto</span>
+  </mat-toolbar>
+
+  <div class="clock-content">
+    <mat-card class="clock-card">
+      <mat-card-content>
+        <div class="current-time-section">
+          <div class="time-display">
+            {{ currentTime | date:'HH:mm:ss' }}
+          </div>
+          <div class="date-display">
+            {{ currentTime | date:'EEEE, dd/MM/yyyy':'pt-BR' }}
+          </div>
+        </div>
+
+        <div class="status-section" *ngIf="todayRecord">
+          <mat-card class="status-card">
+            <mat-card-header>
+              <mat-card-title>Status Atual</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="working-info">
+                <div class="entry-time">
+                  <mat-icon>login</mat-icon>
+                  <span>Entrada: {{ todayRecord.entryTime | date:'HH:mm' }}</span>
+                </div>
+                <div class="working-time">
+                  <mat-icon>timer</mat-icon>
+                  <span>Tempo trabalhado: {{ getWorkingTime() }}</span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <div class="actions-section">
+          <div *ngIf="!todayRecord" class="clock-in-section">
+            <button mat-fab color="primary"
+                    (click)="clockIn()"
+                    [disabled]="isLoading"
+                    class="clock-in-button">
+              <mat-icon *ngIf="!isLoading">login</mat-icon>
+              <mat-spinner *ngIf="isLoading" diameter="24"></mat-spinner>
+            </button>
+            <p class="action-label">Registrar Entrada</p>
+          </div>
+
+          <div *ngIf="todayRecord" class="clock-out-section">
+            <button mat-fab color="accent"
+                    (click)="clockOut()"
+                    [disabled]="isLoading"
+                    class="clock-out-button">
+              <mat-icon *ngIf="!isLoading">logout</mat-icon>
+              <mat-spinner *ngIf="isLoading" diameter="24"></mat-spinner>
+            </button>
+            <p class="action-label">Registrar Saída</p>
+          </div>
+        </div>
+
+        <div class="info-section" *ngIf="!todayRecord">
+          <mat-card class="info-card">
+            <mat-card-content>
+              <div class="info-message">
+                <mat-icon>info</mat-icon>
+                <p>Toque no botão acima para registrar sua entrada</p>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
