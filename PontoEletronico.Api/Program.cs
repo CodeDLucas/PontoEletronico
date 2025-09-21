@@ -10,6 +10,9 @@ using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure timezone to UTC globally
+TimeZoneInfo.ClearCachedData();
+
 // Add services to the container.
 
 // Database Configuration
