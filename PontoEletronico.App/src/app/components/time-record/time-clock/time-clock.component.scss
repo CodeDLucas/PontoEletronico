@@ -1,0 +1,167 @@
+.time-clock-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+}
+
+.clock-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+
+.clock-card {
+  width: 100%;
+  max-width: 500px;
+  padding: 24px;
+  text-align: center;
+}
+
+.current-time-section {
+  margin-bottom: 32px;
+}
+
+.time-display {
+  font-size: 4rem;
+  font-weight: 300;
+  color: #333;
+  margin-bottom: 8px;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.date-display {
+  font-size: 1.2rem;
+  color: #666;
+  text-transform: capitalize;
+}
+
+.status-section {
+  margin-bottom: 32px;
+}
+
+.status-card {
+  background-color: #e8f5e8;
+  border-left: 4px solid #4caf50;
+}
+
+.working-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.entry-time,
+.working-time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 1.1rem;
+}
+
+.entry-time mat-icon,
+.working-time mat-icon {
+  color: #4caf50;
+}
+
+.actions-section {
+  margin: 48px 0;
+}
+
+.clock-in-button,
+.clock-out-button {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 16px;
+}
+
+.clock-in-button {
+  background-color: #4caf50;
+}
+
+.clock-out-button {
+  background-color: #ff5722;
+}
+
+.clock-in-button mat-icon,
+.clock-out-button mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+.action-label {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+}
+
+.info-section {
+  margin-top: 32px;
+}
+
+.info-card {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.info-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #1976d2;
+}
+
+.info-message mat-icon {
+  color: #2196f3;
+}
+
+.info-message p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+@media (max-width: 600px) {
+  .clock-content {
+    padding: 16px;
+  }
+
+  .clock-card {
+    padding: 16px;
+  }
+
+  .time-display {
+    font-size: 3rem;
+  }
+
+  .date-display {
+    font-size: 1rem;
+  }
+
+  .clock-in-button,
+  .clock-out-button {
+    width: 100px;
+    height: 100px;
+  }
+
+  .clock-in-button mat-icon,
+  .clock-out-button mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .working-info {
+    gap: 12px;
+  }
+
+  .entry-time,
+  .working-time {
+    font-size: 1rem;
+  }
+}
