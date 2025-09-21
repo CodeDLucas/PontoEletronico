@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PontoEletronico.Data;
 using PontoEletronico.Models;
+using PontoEletronico.Middleware;
 using System.Text;
 using FluentValidation.AspNetCore;
 
@@ -82,6 +83,11 @@ builder.Services.AddCors(options =>
 // Add FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 
+// Register Services
+builder.Services.AddScoped<PontoEletronico.Services.IAuthService, PontoEletronico.Services.AuthService>();
+builder.Services.AddScoped<PontoEletronico.Services.ITimeRecordService, PontoEletronico.Services.TimeRecordService>();
+builder.Services.AddScoped<PontoEletronico.Services.IUserService, PontoEletronico.Services.UserService>();
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -125,6 +131,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Custom Error Handling Middleware
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseCors("AllowAngularApp");
 
