@@ -11,7 +11,6 @@ import {
   TimeRecordSummary,
   TimeRecordType,
   CreateTimeRecordRequest,
-  UpdateTimeRecordRequest,
   TimeRecord
 } from '../models';
 import { environment } from '../../environments/environment';
@@ -28,20 +27,20 @@ export class TimeRecordService {
     return this.http.post<ApiResponse<TimeRecord>>(this.API_URL, timeRecord);
   }
 
-  updateTimeRecord(id: number, timeRecord: UpdateTimeRecordRequest): Observable<ApiResponse<TimeRecord>> {
-    return this.http.put<ApiResponse<TimeRecord>>(`${this.API_URL}/${id}`, timeRecord);
-  }
-
   getTimeRecordById(id: number): Observable<ApiResponse<TimeRecord>> {
     return this.http.get<ApiResponse<TimeRecord>>(`${this.API_URL}/${id}`);
   }
 
-  getTimeRecords(page: number = 1, pageSize: number = 10): Observable<ApiResponse<PagedResponse<TimeRecord>>> {
+  getTimeRecords(page: number = 1, pageSize: number = 10): Observable<ApiResponse<TimeRecord[]>> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
 
-    return this.http.get<ApiResponse<PagedResponse<TimeRecord>>>(this.API_URL, { params });
+    return this.http.get<ApiResponse<TimeRecord[]>>(this.API_URL, { params });
+  }
+
+  getTodayTimeRecords(): Observable<ApiResponse<TimeRecord[]>> {
+    return this.http.get<ApiResponse<TimeRecord[]>>(`${this.API_URL}/today`);
   }
 
   getTimeRecordsWithFilter(filter: TimeRecordFilter): Observable<ApiResponse<TimeRecordList[]>> {
@@ -80,9 +79,6 @@ export class TimeRecordService {
     return this.http.get<ApiResponse<PagedResponse<TimeRecordSummary>>>(`${this.API_URL}/summary`, { params });
   }
 
-  getTodayTimeRecords(): Observable<ApiResponse<TimeRecordList[]>> {
-    return this.http.get<ApiResponse<TimeRecordList[]>>(`${this.API_URL}/today`);
-  }
 
   deleteTimeRecord(id: number): Observable<ApiResponse<boolean>> {
     return this.http.delete<ApiResponse<boolean>>(`${this.API_URL}/${id}`);

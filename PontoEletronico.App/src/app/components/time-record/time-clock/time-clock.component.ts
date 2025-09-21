@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { interval, Subscription } from 'rxjs';
 import { TimeRecordService } from '../../../services';
-import { CreateTimeRecordRequest, TimeRecord } from '../../../models';
+import { CreateTimeRecordRequest, TimeRecord, TimeRecordType } from '../../../models';
 
 @Component({
   selector: 'app-time-clock',
@@ -13,7 +13,9 @@ import { CreateTimeRecordRequest, TimeRecord } from '../../../models';
 export class TimeClockComponent implements OnInit, OnDestroy {
   currentTime = new Date();
   isLoading = false;
-  todayRecord?: TimeRecord;
+  todayRecords: TimeRecord[] = [];
+  isWorking = false;
+  lastClockIn?: TimeRecord;
   private timeSubscription?: Subscription;
 
   constructor(
@@ -40,27 +42,49 @@ export class TimeClockComponent implements OnInit, OnDestroy {
   }
 
   private loadTodayRecord(): void {
-    const today = new Date().toISOString().split('T')[0];
-    this.timeRecordService.getTimeRecords(1, 10).subscribe({
+    this.timeRecordService.getTodayTimeRecords().subscribe({
       next: (response) => {
-        if (response.success && response.data?.items) {
-          this.todayRecord = response.data.items.find((record: TimeRecord) =>
-            record.date.startsWith(today) && !record.exitTime
-          );
+        if (response.success && response.data) {
+          this.todayRecords = response.data;
+          this.checkWorkingStatus();
         }
       },
       error: (error: any) => {
-        console.error('Erro ao carregar registro do dia:', error);
+        console.error('Erro ao carregar registros do dia:', error);
       }
     });
   }
 
+  private checkWorkingStatus(): void {
+    if (this.todayRecords.length === 0) {
+      this.isWorking = false;
+      this.lastClockIn = undefined;
+      return;
+    }
+
+    // Ordena os registros por timestamp
+    const sortedRecords = [...this.todayRecords].sort((a, b) =>
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+
+    const lastRecord = sortedRecords[sortedRecords.length - 1];
+
+    if (lastRecord.type === TimeRecordType.ClockIn) {
+      this.isWorking = true;
+      this.lastClockIn = lastRecord;
+    } else {
+      this.isWorking = false;
+      this.lastClockIn = undefined;
+    }
+  }
+
   clockIn(): void {
-    if (this.isLoading) return;
+    if (this.isLoading || this.isWorking) return;
 
     this.isLoading = true;
     const request: CreateTimeRecordRequest = {
-      entryTime: new Date()
+      type: TimeRecordType.ClockIn,
+      timestamp: new Date()
     };
 
     this.timeRecordService.createTimeRecord(request).subscribe({
@@ -68,7 +92,6 @@ export class TimeClockComponent implements OnInit, OnDestroy {
         if (response.success) {
           this.showSuccessMessage('Entrada registrada com sucesso!');
           this.loadTodayRecord();
-          this.router.navigate(['/dashboard']);
         } else {
           this.showErrorMessage(response.message);
         }
@@ -83,18 +106,19 @@ export class TimeClockComponent implements OnInit, OnDestroy {
   }
 
   clockOut(): void {
-    if (this.isLoading || !this.todayRecord) return;
+    if (this.isLoading || !this.isWorking) return;
 
     this.isLoading = true;
+    const request: CreateTimeRecordRequest = {
+      type: TimeRecordType.ClockOut,
+      timestamp: new Date()
+    };
 
-    this.timeRecordService.updateTimeRecord(this.todayRecord.id, {
-      exitTime: new Date()
-    }).subscribe({
+    this.timeRecordService.createTimeRecord(request).subscribe({
       next: (response) => {
         if (response.success) {
           this.showSuccessMessage('Saída registrada com sucesso!');
-          this.todayRecord = undefined;
-          this.router.navigate(['/dashboard']);
+          this.loadTodayRecord();
         } else {
           this.showErrorMessage(response.message);
         }
@@ -113,9 +137,9 @@ export class TimeClockComponent implements OnInit, OnDestroy {
   }
 
   getWorkingTime(): string {
-    if (!this.todayRecord) return '00:00:00';
+    if (!this.isWorking || !this.lastClockIn) return '00:00:00';
 
-    const entryTime = new Date(this.todayRecord.entryTime);
+    const entryTime = new Date(this.lastClockIn.timestamp);
     const diffMs = this.currentTime.getTime() - entryTime.getTime();
 
     const hours = Math.floor(diffMs / (1000 * 60 * 60));

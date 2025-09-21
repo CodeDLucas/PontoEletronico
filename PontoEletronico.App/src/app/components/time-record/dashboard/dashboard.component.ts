@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService, TimeRecordService } from '../../../services';
-import { TimeRecord } from '../../../models';
+import { TimeRecord, TimeRecordType } from '../../../models';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -32,7 +32,7 @@ export class DashboardComponent implements OnInit {
     this.timeRecordService.getTimeRecords(1, 5).subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.recentRecords = response.data.items || [];
+          this.recentRecords = response.data;
         }
         this.isLoading = false;
       },
@@ -44,19 +44,26 @@ export class DashboardComponent implements OnInit {
   }
 
   checkTodayStatus(): void {
-    const today = new Date().toISOString().split('T')[0];
-    this.timeRecordService.getTimeRecords(1, 10).subscribe({
+    this.timeRecordService.getTodayTimeRecords().subscribe({
       next: (response) => {
-        if (response.success && response.data?.items) {
-          const todayRecords = response.data.items.filter((record: TimeRecord) =>
-            record.date.startsWith(today)
-          );
+        if (response.success && response.data) {
+          const todayRecords = response.data;
 
           if (todayRecords.length === 0) {
             this.todayStatus = 'not_started';
           } else {
-            const hasOpenRecord = todayRecords.some((record: TimeRecord) => !record.exitTime);
-            this.todayStatus = hasOpenRecord ? 'working' : 'finished';
+            // Ordena os registros por timestamp
+            const sortedRecords = [...todayRecords].sort((a, b) =>
+              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+            );
+
+            const lastRecord = sortedRecords[sortedRecords.length - 1];
+
+            if (lastRecord.type === TimeRecordType.ClockIn) {
+              this.todayStatus = 'working';
+            } else {
+              this.todayStatus = 'finished';
+            }
           }
         }
       },
@@ -94,6 +101,21 @@ export class DashboardComponent implements OnInit {
       case 'working': return 'primary';
       case 'finished': return 'accent';
       default: return 'basic';
+    }
+  }
+
+  getTypeColor(type: TimeRecordType): string {
+    switch (type) {
+      case TimeRecordType.ClockIn:
+        return 'primary';
+      case TimeRecordType.ClockOut:
+        return 'accent';
+      case TimeRecordType.BreakStart:
+        return 'warn';
+      case TimeRecordType.BreakEnd:
+        return 'primary';
+      default:
+        return 'basic';
     }
   }
 }

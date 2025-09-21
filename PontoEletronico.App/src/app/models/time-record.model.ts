@@ -6,25 +6,18 @@ export enum TimeRecordType {
 }
 
 export interface CreateTimeRecordRequest {
-  entryTime: Date;
+  type: TimeRecordType;
   description?: string;
-}
-
-export interface UpdateTimeRecordRequest {
-  exitTime: Date;
-  description?: string;
+  timestamp?: Date;
 }
 
 export interface TimeRecord {
   id: number;
-  date: string;
-  entryTime: Date;
-  exitTime?: Date;
-  totalHours?: number;
+  timestamp: Date;
+  type: TimeRecordType;
+  typeDescription: string;
   description?: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
 }
 
 export interface TimeRecordCreate {

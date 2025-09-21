@@ -18,16 +18,16 @@
           </div>
         </div>
 
-        <div class="status-section" *ngIf="todayRecord">
+        <div class="status-section" *ngIf="isWorking && lastClockIn">
           <mat-card class="status-card">
             <mat-card-header>
-              <mat-card-title>Status Atual</mat-card-title>
+              <mat-card-title>Trabalhando</mat-card-title>
             </mat-card-header>
             <mat-card-content>
               <div class="working-info">
                 <div class="entry-time">
                   <mat-icon>login</mat-icon>
-                  <span>Entrada: {{ todayRecord.entryTime | date:'HH:mm' }}</span>
+                  <span>Entrada: {{ lastClockIn.timestamp | date:'HH:mm' }}</span>
                 </div>
                 <div class="working-time">
                   <mat-icon>timer</mat-icon>
@@ -39,7 +39,7 @@
         </div>
 
         <div class="actions-section">
-          <div *ngIf="!todayRecord" class="clock-in-section">
+          <div *ngIf="!isWorking" class="clock-in-section">
             <button mat-fab color="primary"
                     (click)="clockIn()"
                     [disabled]="isLoading"
@@ -50,7 +50,7 @@
             <p class="action-label">Registrar Entrada</p>
           </div>
 
-          <div *ngIf="todayRecord" class="clock-out-section">
+          <div *ngIf="isWorking" class="clock-out-section">
             <button mat-fab color="accent"
                     (click)="clockOut()"
                     [disabled]="isLoading"
@@ -62,7 +62,7 @@
           </div>
         </div>
 
-        <div class="info-section" *ngIf="!todayRecord">
+        <div class="info-section" *ngIf="!isWorking">
           <mat-card class="info-card">
             <mat-card-content>
               <div class="info-message">
