@@ -1,5 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
+import { interval, Subscription } from 'rxjs';
 import { AuthService, TimeRecordService, TimezoneService, NotificationService } from '../../../services';
 import { TimeRecord, TimeRecordType, PagedResponse } from '../../../models';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
@@ -9,13 +10,17 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   currentUser$ = this.authService.currentUser$;
   recentRecords: TimeRecord[] = [];
   isLoading = false;
   todayStatus: 'not_started' | 'working' | 'finished' = 'not_started';
+
+  // Clock properties
+  currentTime = new Date();
+  private timeSubscription?: Subscription;
 
   // Pagination properties
   pageSize = 10;
@@ -32,8 +37,21 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.startClock();
     this.loadRecentRecords(1, this.pageSize);
     this.checkTodayStatus();
+  }
+
+  ngOnDestroy(): void {
+    if (this.timeSubscription) {
+      this.timeSubscription.unsubscribe();
+    }
+  }
+
+  private startClock(): void {
+    this.timeSubscription = interval(1000).subscribe(() => {
+      this.currentTime = new Date();
+    });
   }
 
   onPageChange(event: PageEvent): void {

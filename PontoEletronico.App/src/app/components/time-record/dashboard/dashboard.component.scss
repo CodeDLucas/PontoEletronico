@@ -17,6 +17,17 @@
   font-weight: 500;
 }
 
+.logout-button {
+  margin-left: 16px;
+
+  mat-icon {
+    margin-right: 4px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
 .dashboard-content {
   flex: 1;
   padding: 24px;
@@ -141,6 +152,38 @@
   }
 }
 
+// Clock Section Styles
+.clock-section {
+  margin-bottom: 24px;
+}
+
+.current-time-section {
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.time-display {
+  font-size: 3rem;
+  font-weight: 300;
+  margin-bottom: 8px;
+  font-family: 'Roboto Mono', monospace;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.date-display {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  text-transform: capitalize;
+  font-weight: 400;
+  margin-top: 5%;
+}
+
 @media (max-width: 768px) {
   .dashboard-content {
     padding: 16px;
@@ -160,5 +203,36 @@
       padding: 8px 4px;
       font-size: 12px;
     }
+  }
+
+  .current-time-section {
+    padding: 16px;
+  }
+
+  .time-display {
+    font-size: 2.5rem;
+  }
+
+  .date-display {
+    font-size: 1rem;
+  }
+
+  .logout-button {
+    margin-left: 8px;
+    min-width: auto;
+    padding: 0 8px;
+
+    span {
+      display: none; // Hide text on mobile, keep only icon
+    }
+
+    mat-icon {
+      margin-right: 0;
+    }
+  }
+
+  .user-info {
+    margin-right: 8px;
+    font-size: 14px;
   }
 }

@@ -1,9 +1,10 @@
-import { NgModule } from '@angular/core';
+import { NgModule, LOCALE_ID } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
+import { CommonModule, registerLocaleData } from '@angular/common';
+import localePt from '@angular/common/locales/pt';
 
 // Angular Material Modules
 import { MatCardModule } from '@angular/material/card';
@@ -30,6 +31,9 @@ import { RegisterComponent } from './components/auth/register/register.component
 import { DashboardComponent } from './components/time-record/dashboard/dashboard.component';
 import { TimeClockComponent } from './components/time-record/time-clock/time-clock.component';
 import { AuthInterceptor } from './interceptors';
+
+// Register the Portuguese locale
+registerLocaleData(localePt);
 
 @NgModule({
   declarations: [
@@ -70,6 +74,10 @@ import { AuthInterceptor } from './interceptors';
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
       multi: true
+    },
+    {
+      provide: LOCALE_ID,
+      useValue: 'pt-BR'
     }
   ],
   bootstrap: [AppComponent]

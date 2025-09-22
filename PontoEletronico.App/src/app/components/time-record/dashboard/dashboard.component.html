@@ -5,18 +5,25 @@
     <span *ngIf="currentUser$ | async as user" class="user-info">
       Olá, {{ user.fullName }}!
     </span>
-    <button mat-icon-button [matMenuTriggerFor]="menu">
-      <mat-icon>more_vert</mat-icon>
+    <button mat-raised-button color="accent" (click)="logout()" class="logout-button">
+      <mat-icon>logout</mat-icon>
+      <span>Sair</span>
     </button>
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item (click)="logout()">
-        <mat-icon>logout</mat-icon>
-        <span>Sair</span>
-      </button>
-    </mat-menu>
   </mat-toolbar>
 
   <div class="dashboard-content">
+    <!-- Clock Section -->
+    <div class="clock-section">
+      <div class="current-time-section">
+        <div class="time-display">
+          {{ currentTime | date:'HH:mm:ss' }}
+        </div>
+        <div class="date-display">
+          {{ currentTime | date:'EEEE, dd/MM/yyyy' }}
+        </div>
+      </div>
+    </div>
+
     <div class="status-section">
       <mat-card class="status-card">
         <mat-card-header>
