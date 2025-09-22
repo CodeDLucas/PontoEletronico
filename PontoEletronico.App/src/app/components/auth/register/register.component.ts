@@ -15,6 +15,14 @@ export class RegisterComponent implements OnInit {
   hidePassword = true;
   hideConfirmPassword = true;
 
+  // Password requirements checker
+  passwordRequirements = {
+    minLength: false,
+    hasLowerCase: false,
+    hasUpperCase: false,
+    hasNumber: false
+  };
+
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
@@ -34,6 +42,11 @@ export class RegisterComponent implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
+
+    // Listen to password changes to update requirements checker
+    this.registerForm.get('password')?.valueChanges.subscribe(password => {
+      this.updatePasswordRequirements(password || '');
+    });
   }
 
   passwordMatchValidator(form: FormGroup) {
@@ -119,6 +132,19 @@ export class RegisterComponent implements OnInit {
 
   navigateToLogin(): void {
     this.router.navigate(['/login']);
+  }
+
+  updatePasswordRequirements(password: string): void {
+    this.passwordRequirements = {
+      minLength: password.length >= 6,
+      hasLowerCase: /[a-z]/.test(password),
+      hasUpperCase: /[A-Z]/.test(password),
+      hasNumber: /\d/.test(password)
+    };
+  }
+
+  areAllPasswordRequirementsMet(): boolean {
+    return Object.values(this.passwordRequirements).every(req => req);
   }
 
 }

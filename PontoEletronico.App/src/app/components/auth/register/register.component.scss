@@ -76,6 +76,60 @@ mat-card-actions p {
   }
 }
 
+// Password Requirements Checker Styles
+.password-requirements {
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+
+  h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .requirement {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    mat-icon {
+      margin-right: 8px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #dc3545; // Red for unmet requirements
+      transition: color 0.3s ease;
+    }
+
+    span {
+      color: #6c757d;
+      transition: color 0.3s ease;
+    }
+
+    // Styles for met requirements
+    &.met {
+      mat-icon {
+        color: #28a745; // Green for met requirements
+      }
+
+      span {
+        color: #28a745;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
 @media (max-width: 600px) {
   .register-container {
     padding: 10px;
