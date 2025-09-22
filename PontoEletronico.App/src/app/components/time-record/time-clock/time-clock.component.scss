@@ -43,6 +43,31 @@
   margin-bottom: 32px;
 }
 
+.description-section {
+  margin-bottom: 32px;
+
+  .full-width {
+    width: 100%;
+  }
+
+  .mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+      border-radius: 8px;
+    }
+
+    .mat-mdc-form-field-hint-wrapper {
+      font-size: 12px;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+    line-height: 1.4;
+  }
+}
+
 .status-card {
   background-color: #e8f5e8;
   border-left: 4px solid #4caf50;
@@ -120,6 +145,7 @@
 
 .info-message mat-icon {
   color: #2196f3;
+  padding: 10px;
 }
 
 .info-message p {
@@ -164,5 +190,20 @@
   .entry-time,
   .working-time {
     font-size: 1rem;
+  }
+
+  .description-section {
+    margin-bottom: 24px;
+
+    .mat-mdc-form-field {
+      .mat-mdc-form-field-hint-wrapper {
+        font-size: 11px;
+      }
+    }
+
+    textarea {
+      min-height: 70px;
+      font-size: 14px;
+    }
   }
 }
