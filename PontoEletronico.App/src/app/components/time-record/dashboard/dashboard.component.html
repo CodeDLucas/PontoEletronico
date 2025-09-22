@@ -60,7 +60,7 @@
             <ng-container matColumnDef="timestamp">
               <mat-header-cell *matHeaderCellDef>Data/Hora</mat-header-cell>
               <mat-cell *matCellDef="let record">
-                {{ record.timestamp | date:'dd/MM/yyyy HH:mm' }}
+                {{ formatTimestamp(record.timestamp) }}
               </mat-cell>
             </ng-container>
 

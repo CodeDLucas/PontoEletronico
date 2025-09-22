@@ -14,6 +14,7 @@ import {
   TimeRecord
 } from '../models';
 import { environment } from '../../environments/environment';
+import { TimezoneService } from './timezone.service';
 
 @Injectable({
   providedIn: 'root'
@@ -21,10 +22,19 @@ import { environment } from '../../environments/environment';
 export class TimeRecordService {
   private readonly API_URL = `${environment.apiUrl}/api/timerecord`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private timezoneService: TimezoneService
+  ) {}
 
   createTimeRecord(timeRecord: CreateTimeRecordRequest): Observable<ApiResponse<TimeRecord>> {
-    return this.http.post<ApiResponse<TimeRecord>>(this.API_URL, timeRecord);
+    // Converte timestamp para UTC se fornecido
+    const request = {
+      ...timeRecord,
+      timestamp: timeRecord.timestamp ? this.timezoneService.toUtcIsoString(timeRecord.timestamp) : undefined
+    };
+
+    return this.http.post<ApiResponse<TimeRecord>>(this.API_URL, request);
   }
 
   getTimeRecordById(id: number): Observable<ApiResponse<TimeRecord>> {
@@ -49,11 +59,13 @@ export class TimeRecordService {
       .set('pageSize', filter.pageSize.toString());
 
     if (filter.startDate) {
-      params = params.set('startDate', filter.startDate);
+      // Converte data local para UTC antes de enviar para o backend
+      params = params.set('startDate', this.timezoneService.dateStringToUtc(filter.startDate));
     }
 
     if (filter.endDate) {
-      params = params.set('endDate', filter.endDate);
+      // Converte data local para UTC antes de enviar para o backend
+      params = params.set('endDate', this.timezoneService.dateStringToUtc(filter.endDate));
     }
 
     if (filter.type !== undefined) {
@@ -69,11 +81,13 @@ export class TimeRecordService {
       .set('pageSize', filter.pageSize.toString());
 
     if (filter.startDate) {
-      params = params.set('startDate', filter.startDate);
+      // Converte data local para UTC antes de enviar para o backend
+      params = params.set('startDate', this.timezoneService.dateStringToUtc(filter.startDate));
     }
 
     if (filter.endDate) {
-      params = params.set('endDate', filter.endDate);
+      // Converte data local para UTC antes de enviar para o backend
+      params = params.set('endDate', this.timezoneService.dateStringToUtc(filter.endDate));
     }
 
     return this.http.get<ApiResponse<PagedResponse<TimeRecordSummary>>>(`${this.API_URL}/summary`, { params });

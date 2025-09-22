@@ -27,7 +27,7 @@
               <div class="working-info">
                 <div class="entry-time">
                   <mat-icon>login</mat-icon>
-                  <span>Entrada: {{ lastClockIn.timestamp | date:'HH:mm' }}</span>
+                  <span>Entrada: {{ timezoneService.formatTimeOnly(lastClockIn.timestamp) }}</span>
                 </div>
                 <div class="working-time">
                   <mat-icon>timer</mat-icon>

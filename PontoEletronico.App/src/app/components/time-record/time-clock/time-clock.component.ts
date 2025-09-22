@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { interval, Subscription } from 'rxjs';
-import { TimeRecordService } from '../../../services';
+import { TimeRecordService, TimezoneService } from '../../../services';
 import { CreateTimeRecordRequest, TimeRecord, TimeRecordType } from '../../../models';
 
 @Component({
@@ -20,6 +20,7 @@ export class TimeClockComponent implements OnInit, OnDestroy {
 
   constructor(
     private timeRecordService: TimeRecordService,
+    public timezoneService: TimezoneService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {}
@@ -62,9 +63,9 @@ export class TimeClockComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Ordena os registros por timestamp
+    // Ordena os registros por timestamp (convertendo para local para comparação)
     const sortedRecords = [...this.todayRecords].sort((a, b) =>
-      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      this.timezoneService.toLocal(a.timestamp).getTime() - this.timezoneService.toLocal(b.timestamp).getTime()
     );
 
     const lastRecord = sortedRecords[sortedRecords.length - 1];
@@ -84,7 +85,7 @@ export class TimeClockComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const request: CreateTimeRecordRequest = {
       type: TimeRecordType.ClockIn,
-      timestamp: new Date()
+      timestamp: this.timezoneService.nowUtc()
     };
 
     this.timeRecordService.createTimeRecord(request).subscribe({
@@ -111,7 +112,7 @@ export class TimeClockComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const request: CreateTimeRecordRequest = {
       type: TimeRecordType.ClockOut,
-      timestamp: new Date()
+      timestamp: this.timezoneService.nowUtc()
     };
 
     this.timeRecordService.createTimeRecord(request).subscribe({
@@ -139,14 +140,10 @@ export class TimeClockComponent implements OnInit, OnDestroy {
   getWorkingTime(): string {
     if (!this.isWorking || !this.lastClockIn) return '00:00:00';
 
-    const entryTime = new Date(this.lastClockIn.timestamp);
+    const entryTime = this.timezoneService.toLocal(this.lastClockIn.timestamp);
     const diffMs = this.currentTime.getTime() - entryTime.getTime();
 
-    const hours = Math.floor(diffMs / (1000 * 60 * 60));
-    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return this.timezoneService.formatDuration(diffMs);
   }
 
   private showSuccessMessage(message: string): void {

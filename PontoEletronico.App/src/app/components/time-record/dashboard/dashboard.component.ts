@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService, TimeRecordService } from '../../../services';
+import { AuthService, TimeRecordService, TimezoneService } from '../../../services';
 import { TimeRecord, TimeRecordType } from '../../../models';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -18,6 +18,7 @@ export class DashboardComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private timeRecordService: TimeRecordService,
+    public timezoneService: TimezoneService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {}
@@ -52,9 +53,9 @@ export class DashboardComponent implements OnInit {
           if (todayRecords.length === 0) {
             this.todayStatus = 'not_started';
           } else {
-            // Ordena os registros por timestamp
+            // Ordena os registros por timestamp (convertendo para local para comparação)
             const sortedRecords = [...todayRecords].sort((a, b) =>
-              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+              this.timezoneService.toLocal(a.timestamp).getTime() - this.timezoneService.toLocal(b.timestamp).getTime()
             );
 
             const lastRecord = sortedRecords[sortedRecords.length - 1];
@@ -117,5 +118,17 @@ export class DashboardComponent implements OnInit {
       default:
         return 'basic';
     }
+  }
+
+  formatTimestamp(timestamp: Date): string {
+    return this.timezoneService.formatDateTime(timestamp);
+  }
+
+  formatTimeOnly(timestamp: Date): string {
+    return this.timezoneService.formatTimeOnly(timestamp);
+  }
+
+  formatDateOnly(timestamp: Date): string {
+    return this.timezoneService.formatDateOnly(timestamp);
   }
 }
