@@ -138,9 +138,9 @@ export class DashboardComponent implements OnInit {
   getTypeColor(type: TimeRecordType): string {
     switch (type) {
       case TimeRecordType.ClockIn:
-        return 'primary';
+        return 'clock-in';
       case TimeRecordType.ClockOut:
-        return 'accent';
+        return 'clock-out';
       case TimeRecordType.BreakStart:
         return 'warn';
       case TimeRecordType.BreakEnd:

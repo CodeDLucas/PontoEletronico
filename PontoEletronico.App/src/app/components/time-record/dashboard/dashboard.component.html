@@ -70,7 +70,7 @@
             <ng-container matColumnDef="type">
               <mat-header-cell *matHeaderCellDef>Tipo</mat-header-cell>
               <mat-cell *matCellDef="let record">
-                <mat-chip [color]="getTypeColor(record.type)" selected>
+                <mat-chip [ngClass]="getTypeColor(record.type)" selected>
                   {{ record.typeDescription }}
                 </mat-chip>
               </mat-cell>

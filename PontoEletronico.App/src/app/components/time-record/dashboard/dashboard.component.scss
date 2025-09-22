@@ -122,6 +122,25 @@
   color: #666;
 }
 
+// Cores customizadas para tipos de marcação
+::ng-deep .mat-mdc-chip.clock-in {
+  --mdc-chip-label-text-color: #618eca !important;
+  color: #618eca !important;
+
+  .mdc-evolution-chip__text-label {
+    color: #618eca !important;
+  }
+}
+
+::ng-deep .mat-mdc-chip.clock-out {
+  --mdc-chip-label-text-color: #a14145 !important;
+  color: #a14145 !important;
+
+  .mdc-evolution-chip__text-label {
+    color: #a14145 !important;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard-content {
     padding: 16px;
