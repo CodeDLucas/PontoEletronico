@@ -60,7 +60,7 @@ public class TimeRecordService : ITimeRecordService
         }
     }
 
-    public async Task<ApiResponseDto<List<TimeRecordListDto>>> GetUserTimeRecordsAsync(string userId, TimeRecordFilterDto filter)
+    public async Task<ApiResponseDto<PagedResponseDto<TimeRecordListDto>>> GetUserTimeRecordsAsync(string userId, TimeRecordFilterDto filter)
     {
         try
         {
@@ -83,6 +83,9 @@ public class TimeRecordService : ITimeRecordService
                 query = query.Where(tr => tr.Type == filter.Type.Value);
             }
 
+            // Conta o total de registros antes da paginação
+            var totalCount = await query.CountAsync();
+
             var timeRecords = await query
                 .OrderByDescending(tr => tr.Timestamp)
                 .Skip((filter.Page - 1) * filter.PageSize)
@@ -97,12 +100,14 @@ public class TimeRecordService : ITimeRecordService
                 })
                 .ToListAsync();
 
-            return ApiResponseDto<List<TimeRecordListDto>>.SuccessResult(timeRecords);
+            var pagedResponse = new PagedResponseDto<TimeRecordListDto>(timeRecords, totalCount, filter.Page, filter.PageSize);
+
+            return ApiResponseDto<PagedResponseDto<TimeRecordListDto>>.SuccessResult(pagedResponse);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao buscar marcações de ponto para o usuário {UserId}", userId);
-            return ApiResponseDto<List<TimeRecordListDto>>.ErrorResult("Erro interno do servidor");
+            return ApiResponseDto<PagedResponseDto<TimeRecordListDto>>.ErrorResult("Erro interno do servidor");
         }
     }
 

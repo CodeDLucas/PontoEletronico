@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { AuthService } from '../../../services';
+import { AuthService, NotificationService } from '../../../services';
 import { LoginRequest } from '../../../models';
 
 @Component({
@@ -19,7 +18,7 @@ export class LoginComponent implements OnInit {
     private formBuilder: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -40,17 +39,18 @@ export class LoginComponent implements OnInit {
 
       this.authService.login(loginData).subscribe({
         next: (response) => {
-          if (response.success) {
-            this.showSuccessMessage('Login realizado com sucesso!');
+          if (this.notificationService.handleApiResult(
+            response,
+            'Login realizado com sucesso!',
+            'Erro ao realizar login. Tente novamente.'
+          )) {
             this.router.navigate(['/dashboard']);
-          } else {
-            this.showErrorMessage(response.message);
           }
           this.isLoading = false;
         },
         error: (error) => {
           console.error('Erro no login:', error);
-          this.showErrorMessage('Erro ao realizar login. Tente novamente.');
+          this.notificationService.handleHttpError(error, 'Erro ao realizar login. Tente novamente.');
           this.isLoading = false;
         }
       });
@@ -83,17 +83,4 @@ export class LoginComponent implements OnInit {
     this.router.navigate(['/register']);
   }
 
-  private showSuccessMessage(message: string): void {
-    this.snackBar.open(message, 'Fechar', {
-      duration: 3000,
-      panelClass: ['success-snackbar']
-    });
-  }
-
-  private showErrorMessage(message: string): void {
-    this.snackBar.open(message, 'Fechar', {
-      duration: 5000,
-      panelClass: ['error-snackbar']
-    });
-  }
 }

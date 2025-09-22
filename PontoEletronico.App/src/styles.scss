@@ -7,21 +7,46 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .success-snackbar {
   background-color: #4caf50 !important;
   color: white !important;
+  font-weight: 500 !important;
+
+  .mat-mdc-snack-bar-label {
+    line-height: 1.4 !important;
+    max-width: none !important;
+  }
 }
 
 .error-snackbar {
   background-color: #f44336 !important;
   color: white !important;
+  font-weight: 500 !important;
+
+  .mat-mdc-snack-bar-label {
+    line-height: 1.4 !important;
+    max-width: none !important;
+    white-space: pre-wrap !important;
+  }
 }
 
 .warning-snackbar {
   background-color: #ff9800 !important;
   color: white !important;
+  font-weight: 500 !important;
+
+  .mat-mdc-snack-bar-label {
+    line-height: 1.4 !important;
+    max-width: none !important;
+  }
 }
 
 .info-snackbar {
   background-color: #2196f3 !important;
   color: white !important;
+  font-weight: 500 !important;
+
+  .mat-mdc-snack-bar-label {
+    line-height: 1.4 !important;
+    max-width: none !important;
+  }
 }
 
 /* Utility Classes */

@@ -92,10 +92,10 @@ public class TimeRecordController : ControllerBase
     /// <param name="type">Tipo de marcação</param>
     /// <param name="page">Página</param>
     /// <param name="pageSize">Tamanho da página</param>
-    /// <returns>Lista de marcações</returns>
+    /// <returns>Lista de marcações paginada</returns>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponseDto<List<TimeRecordListDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponseDto<List<TimeRecordListDto>>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponseDto<PagedResponseDto<TimeRecordListDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseDto<PagedResponseDto<TimeRecordListDto>>), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetTimeRecords(
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
@@ -106,7 +106,7 @@ public class TimeRecordController : ControllerBase
         var userId = GetCurrentUserId();
         if (string.IsNullOrEmpty(userId))
         {
-            return Unauthorized(ApiResponseDto<List<TimeRecordListDto>>.ErrorResult("Usuário não autenticado"));
+            return Unauthorized(ApiResponseDto<PagedResponseDto<TimeRecordListDto>>.ErrorResult("Usuário não autenticado"));
         }
 
         var filter = new TimeRecordFilterDto

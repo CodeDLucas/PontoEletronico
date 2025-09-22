@@ -1,8 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { interval, Subscription } from 'rxjs';
-import { TimeRecordService } from '../../../services';
+import { TimeRecordService, TimezoneService, NotificationService } from '../../../services';
 import { CreateTimeRecordRequest, TimeRecord, TimeRecordType } from '../../../models';
 
 @Component({
@@ -20,8 +19,9 @@ export class TimeClockComponent implements OnInit, OnDestroy {
 
   constructor(
     private timeRecordService: TimeRecordService,
+    public timezoneService: TimezoneService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -51,6 +51,7 @@ export class TimeClockComponent implements OnInit, OnDestroy {
       },
       error: (error: any) => {
         console.error('Erro ao carregar registros do dia:', error);
+        this.notificationService.handleHttpError(error, 'Erro ao carregar registros do dia.');
       }
     });
   }
@@ -62,9 +63,9 @@ export class TimeClockComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Ordena os registros por timestamp
+    // Ordena os registros por timestamp (convertendo para local para comparação)
     const sortedRecords = [...this.todayRecords].sort((a, b) =>
-      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      this.timezoneService.toLocal(a.timestamp).getTime() - this.timezoneService.toLocal(b.timestamp).getTime()
     );
 
     const lastRecord = sortedRecords[sortedRecords.length - 1];
@@ -84,22 +85,22 @@ export class TimeClockComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const request: CreateTimeRecordRequest = {
       type: TimeRecordType.ClockIn,
-      timestamp: new Date()
+      timestamp: this.timezoneService.nowUtc()
     };
 
     this.timeRecordService.createTimeRecord(request).subscribe({
       next: (response) => {
         if (response.success) {
-          this.showSuccessMessage('Entrada registrada com sucesso!');
           this.loadTodayRecord();
+          this.redirectToDashboard('Entrada registrada com sucesso!');
         } else {
-          this.showErrorMessage(response.message);
+          this.notificationService.handleErrorResponse(response, 'Erro ao registrar entrada. Tente novamente.');
         }
         this.isLoading = false;
       },
       error: (error: any) => {
         console.error('Erro ao registrar entrada:', error);
-        this.showErrorMessage('Erro ao registrar entrada. Tente novamente.');
+        this.notificationService.handleHttpError(error, 'Erro ao registrar entrada. Tente novamente.');
         this.isLoading = false;
       }
     });
@@ -111,22 +112,22 @@ export class TimeClockComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const request: CreateTimeRecordRequest = {
       type: TimeRecordType.ClockOut,
-      timestamp: new Date()
+      timestamp: this.timezoneService.nowUtc()
     };
 
     this.timeRecordService.createTimeRecord(request).subscribe({
       next: (response) => {
         if (response.success) {
-          this.showSuccessMessage('Saída registrada com sucesso!');
           this.loadTodayRecord();
+          this.redirectToDashboard('Saída registrada com sucesso!');
         } else {
-          this.showErrorMessage(response.message);
+          this.notificationService.handleErrorResponse(response, 'Erro ao registrar saída. Tente novamente.');
         }
         this.isLoading = false;
       },
       error: (error: any) => {
         console.error('Erro ao registrar saída:', error);
-        this.showErrorMessage('Erro ao registrar saída. Tente novamente.');
+        this.notificationService.handleHttpError(error, 'Erro ao registrar saída. Tente novamente.');
         this.isLoading = false;
       }
     });
@@ -139,27 +140,25 @@ export class TimeClockComponent implements OnInit, OnDestroy {
   getWorkingTime(): string {
     if (!this.isWorking || !this.lastClockIn) return '00:00:00';
 
-    const entryTime = new Date(this.lastClockIn.timestamp);
+    const entryTime = this.timezoneService.toLocal(this.lastClockIn.timestamp);
     const diffMs = this.currentTime.getTime() - entryTime.getTime();
 
-    const hours = Math.floor(diffMs / (1000 * 60 * 60));
-    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return this.timezoneService.formatDuration(diffMs);
   }
 
-  private showSuccessMessage(message: string): void {
-    this.snackBar.open(message, 'Fechar', {
-      duration: 3000,
-      panelClass: ['success-snackbar']
-    });
+  /**
+   * Redireciona para o dashboard com delay e mensagem informativa
+   */
+  private redirectToDashboard(successMessage: string): void {
+    this.notificationService.showSuccessWithRedirect(
+      successMessage,
+      'Retornando ao dashboard...',
+      1500
+    );
+
+    setTimeout(() => {
+      this.router.navigate(['/dashboard']);
+    }, 1500);
   }
 
-  private showErrorMessage(message: string): void {
-    this.snackBar.open(message, 'Fechar', {
-      duration: 5000,
-      panelClass: ['error-snackbar']
-    });
-  }
 }

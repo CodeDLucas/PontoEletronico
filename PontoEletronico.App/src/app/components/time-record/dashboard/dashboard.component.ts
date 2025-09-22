@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService, TimeRecordService } from '../../../services';
-import { TimeRecord, TimeRecordType } from '../../../models';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { AuthService, TimeRecordService, TimezoneService, NotificationService } from '../../../services';
+import { TimeRecord, TimeRecordType, PagedResponse } from '../../../models';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-dashboard',
@@ -10,35 +10,55 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
   currentUser$ = this.authService.currentUser$;
   recentRecords: TimeRecord[] = [];
   isLoading = false;
   todayStatus: 'not_started' | 'working' | 'finished' = 'not_started';
 
+  // Pagination properties
+  pageSize = 10;
+  currentPage = 1;
+  totalRecords = 0;
+  showPagination = false;
+
   constructor(
     private authService: AuthService,
     private timeRecordService: TimeRecordService,
+    public timezoneService: TimezoneService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
-    this.loadRecentRecords();
+    this.loadRecentRecords(1, this.pageSize);
     this.checkTodayStatus();
   }
 
-  loadRecentRecords(): void {
+  onPageChange(event: PageEvent): void {
+    this.currentPage = event.pageIndex + 1;
+    this.pageSize = event.pageSize;
+    this.loadRecentRecords(this.currentPage, this.pageSize);
+  }
+
+  loadRecentRecords(page: number = 1, pageSize: number = 10): void {
     this.isLoading = true;
-    this.timeRecordService.getTimeRecords(1, 5).subscribe({
+    this.timeRecordService.getTimeRecords(page, pageSize).subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.recentRecords = response.data;
+          this.recentRecords = response.data.data;
+          this.totalRecords = response.data.totalCount;
+          this.currentPage = response.data.page;
+          this.pageSize = response.data.pageSize;
+          this.showPagination = response.data.totalCount > pageSize;
         }
         this.isLoading = false;
       },
       error: (error: any) => {
         console.error('Erro ao carregar registros:', error);
         this.isLoading = false;
+        this.notificationService.handleHttpError(error, 'Erro ao carregar registros.');
       }
     });
   }
@@ -52,9 +72,9 @@ export class DashboardComponent implements OnInit {
           if (todayRecords.length === 0) {
             this.todayStatus = 'not_started';
           } else {
-            // Ordena os registros por timestamp
+            // Ordena os registros por timestamp (convertendo para local para comparação)
             const sortedRecords = [...todayRecords].sort((a, b) =>
-              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+              this.timezoneService.toLocal(a.timestamp).getTime() - this.timezoneService.toLocal(b.timestamp).getTime()
             );
 
             const lastRecord = sortedRecords[sortedRecords.length - 1];
@@ -69,6 +89,7 @@ export class DashboardComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Erro ao verificar status do dia:', error);
+        this.notificationService.handleHttpError(error, 'Erro ao verificar status do dia.');
       }
     });
   }
@@ -78,11 +99,21 @@ export class DashboardComponent implements OnInit {
   }
 
   logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-    this.snackBar.open('Logout realizado com sucesso!', 'Fechar', {
-      duration: 3000,
-      panelClass: ['success-snackbar']
+    this.authService.logout().subscribe({
+      next: (response) => {
+        this.notificationService.handleApiResult(
+          response,
+          'Logout realizado com sucesso!',
+          'Erro ao realizar logout'
+        );
+        this.router.navigate(['/login']);
+      },
+      error: (error: any) => {
+        // Mesmo em caso de erro no logout, redirecionamos para o login
+        console.error('Erro no logout:', error);
+        this.notificationService.showWarning('Sessão encerrada localmente.');
+        this.router.navigate(['/login']);
+      }
     });
   }
 
@@ -107,9 +138,9 @@ export class DashboardComponent implements OnInit {
   getTypeColor(type: TimeRecordType): string {
     switch (type) {
       case TimeRecordType.ClockIn:
-        return 'primary';
+        return 'clock-in';
       case TimeRecordType.ClockOut:
-        return 'accent';
+        return 'clock-out';
       case TimeRecordType.BreakStart:
         return 'warn';
       case TimeRecordType.BreakEnd:
@@ -117,5 +148,17 @@ export class DashboardComponent implements OnInit {
       default:
         return 'basic';
     }
+  }
+
+  formatTimestamp(timestamp: Date): string {
+    return this.timezoneService.formatDateTime(timestamp);
+  }
+
+  formatTimeOnly(timestamp: Date): string {
+    return this.timezoneService.formatTimeOnly(timestamp);
+  }
+
+  formatDateOnly(timestamp: Date): string {
+    return this.timezoneService.formatDateOnly(timestamp);
   }
 }
