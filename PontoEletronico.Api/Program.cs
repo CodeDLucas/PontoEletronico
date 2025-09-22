@@ -7,6 +7,7 @@ using PontoEletronico.Models;
 using PontoEletronico.Middleware;
 using System.Text;
 using FluentValidation.AspNetCore;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,6 +86,8 @@ builder.Services.AddCors(options =>
 
 // Add FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 // Register Services
 builder.Services.AddScoped<PontoEletronico.Services.IAuthService, PontoEletronico.Services.AuthService>();

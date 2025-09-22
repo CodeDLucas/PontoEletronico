@@ -30,7 +30,7 @@ export class RegisterComponent implements OnInit {
     this.registerForm = this.formBuilder.group({
       fullName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      employeeCode: ['', [Validators.required, Validators.minLength(2)]],
+      employeeCode: [''],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
@@ -92,7 +92,6 @@ export class RegisterComponent implements OnInit {
 
   getEmployeeCodeErrorMessage(): string {
     const control = this.registerForm.get('employeeCode');
-    if (control?.hasError('required')) return 'Código do funcionário é obrigatório';
     if (control?.hasError('minlength')) return 'Código deve ter pelo menos 2 caracteres';
     return '';
   }

@@ -80,11 +80,14 @@ public class AuthService : IAuthService
                 return ApiResponseDto<AuthResponseDto>.ErrorResult("Email já está em uso");
             }
 
-            var existingEmployeeCode = await _userManager.Users
-                .FirstOrDefaultAsync(u => u.EmployeeCode == request.EmployeeCode);
-            if (existingEmployeeCode != null)
+            if (!string.IsNullOrEmpty(request.EmployeeCode))
             {
-                return ApiResponseDto<AuthResponseDto>.ErrorResult("Código do funcionário já está em uso");
+                var existingEmployeeCode = await _userManager.Users
+                    .FirstOrDefaultAsync(u => u.EmployeeCode == request.EmployeeCode);
+                if (existingEmployeeCode != null)
+                {
+                    return ApiResponseDto<AuthResponseDto>.ErrorResult("Código do funcionário já está em uso");
+                }
             }
 
             var user = new ApplicationUser
@@ -203,7 +206,7 @@ public class AuthService : IAuthService
             new(ClaimTypes.Name, user.UserName!),
             new(ClaimTypes.Email, user.Email!),
             new("FullName", user.FullName),
-            new("EmployeeCode", user.EmployeeCode),
+            new("EmployeeCode", user.EmployeeCode ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };
