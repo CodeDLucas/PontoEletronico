@@ -1,8 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService, TimeRecordService, TimezoneService } from '../../../services';
+import { AuthService, TimeRecordService, TimezoneService, NotificationService } from '../../../services';
 import { TimeRecord, TimeRecordType, PagedResponse } from '../../../models';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 @Component({
@@ -29,7 +28,7 @@ export class DashboardComponent implements OnInit {
     private timeRecordService: TimeRecordService,
     public timezoneService: TimezoneService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -59,10 +58,7 @@ export class DashboardComponent implements OnInit {
       error: (error: any) => {
         console.error('Erro ao carregar registros:', error);
         this.isLoading = false;
-        this.snackBar.open('Erro ao carregar registros', 'Fechar', {
-          duration: 3000,
-          panelClass: ['error-snackbar']
-        });
+        this.notificationService.handleHttpError(error, 'Erro ao carregar registros.');
       }
     });
   }
@@ -93,6 +89,7 @@ export class DashboardComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Erro ao verificar status do dia:', error);
+        this.notificationService.handleHttpError(error, 'Erro ao verificar status do dia.');
       }
     });
   }
@@ -102,11 +99,21 @@ export class DashboardComponent implements OnInit {
   }
 
   logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-    this.snackBar.open('Logout realizado com sucesso!', 'Fechar', {
-      duration: 3000,
-      panelClass: ['success-snackbar']
+    this.authService.logout().subscribe({
+      next: (response) => {
+        this.notificationService.handleApiResult(
+          response,
+          'Logout realizado com sucesso!',
+          'Erro ao realizar logout'
+        );
+        this.router.navigate(['/login']);
+      },
+      error: (error: any) => {
+        // Mesmo em caso de erro no logout, redirecionamos para o login
+        console.error('Erro no logout:', error);
+        this.notificationService.showWarning('Sessão encerrada localmente.');
+        this.router.navigate(['/login']);
+      }
     });
   }
 

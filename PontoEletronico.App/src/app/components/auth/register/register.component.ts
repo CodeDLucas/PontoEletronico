@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { AuthService } from '../../../services';
+import { AuthService, NotificationService } from '../../../services';
 import { RegisterRequest } from '../../../models';
 
 @Component({
@@ -20,7 +19,7 @@ export class RegisterComponent implements OnInit {
     private formBuilder: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -66,17 +65,18 @@ export class RegisterComponent implements OnInit {
 
       this.authService.register(registerData).subscribe({
         next: (response) => {
-          if (response.success) {
-            this.showSuccessMessage('Conta criada com sucesso! Faça login para continuar.');
+          if (this.notificationService.handleApiResult(
+            response,
+            'Conta criada com sucesso! Faça login para continuar.',
+            'Erro ao criar conta. Tente novamente.'
+          )) {
             this.router.navigate(['/login']);
-          } else {
-            this.showErrorMessage(response.message);
           }
           this.isLoading = false;
         },
         error: (error) => {
           console.error('Erro no registro:', error);
-          this.showErrorMessage('Erro ao criar conta. Tente novamente.');
+          this.notificationService.handleHttpError(error, 'Erro ao criar conta. Tente novamente.');
           this.isLoading = false;
         }
       });
@@ -122,17 +122,4 @@ export class RegisterComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  private showSuccessMessage(message: string): void {
-    this.snackBar.open(message, 'Fechar', {
-      duration: 3000,
-      panelClass: ['success-snackbar']
-    });
-  }
-
-  private showErrorMessage(message: string): void {
-    this.snackBar.open(message, 'Fechar', {
-      duration: 5000,
-      panelClass: ['error-snackbar']
-    });
-  }
 }
