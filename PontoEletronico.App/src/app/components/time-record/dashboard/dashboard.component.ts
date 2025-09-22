@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService, TimeRecordService, TimezoneService } from '../../../services';
-import { TimeRecord, TimeRecordType } from '../../../models';
+import { TimeRecord, TimeRecordType, PagedResponse } from '../../../models';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-dashboard',
@@ -10,10 +11,18 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
   currentUser$ = this.authService.currentUser$;
   recentRecords: TimeRecord[] = [];
   isLoading = false;
   todayStatus: 'not_started' | 'working' | 'finished' = 'not_started';
+
+  // Pagination properties
+  pageSize = 10;
+  currentPage = 1;
+  totalRecords = 0;
+  showPagination = false;
 
   constructor(
     private authService: AuthService,
@@ -24,22 +33,36 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadRecentRecords();
+    this.loadRecentRecords(1, this.pageSize);
     this.checkTodayStatus();
   }
 
-  loadRecentRecords(): void {
+  onPageChange(event: PageEvent): void {
+    this.currentPage = event.pageIndex + 1;
+    this.pageSize = event.pageSize;
+    this.loadRecentRecords(this.currentPage, this.pageSize);
+  }
+
+  loadRecentRecords(page: number = 1, pageSize: number = 10): void {
     this.isLoading = true;
-    this.timeRecordService.getTimeRecords(1, 5).subscribe({
+    this.timeRecordService.getTimeRecords(page, pageSize).subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.recentRecords = response.data;
+          this.recentRecords = response.data.data;
+          this.totalRecords = response.data.totalCount;
+          this.currentPage = response.data.page;
+          this.pageSize = response.data.pageSize;
+          this.showPagination = response.data.totalCount > pageSize;
         }
         this.isLoading = false;
       },
       error: (error: any) => {
         console.error('Erro ao carregar registros:', error);
         this.isLoading = false;
+        this.snackBar.open('Erro ao carregar registros', 'Fechar', {
+          duration: 3000,
+          panelClass: ['error-snackbar']
+        });
       }
     });
   }

@@ -105,6 +105,23 @@
   background-color: #f5f5f5;
 }
 
+// Estilos para o paginator
+.mat-mdc-paginator {
+  margin-top: 16px;
+  border-top: 1px solid #e0e0e0;
+  background-color: #fafafa;
+}
+
+.mat-mdc-paginator-container {
+  padding: 8px 16px;
+}
+
+.mat-mdc-paginator-page-size-label,
+.mat-mdc-paginator-range-label {
+  font-size: 14px;
+  color: #666;
+}
+
 @media (max-width: 768px) {
   .dashboard-content {
     padding: 16px;

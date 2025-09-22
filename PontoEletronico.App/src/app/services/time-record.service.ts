@@ -41,12 +41,12 @@ export class TimeRecordService {
     return this.http.get<ApiResponse<TimeRecord>>(`${this.API_URL}/${id}`);
   }
 
-  getTimeRecords(page: number = 1, pageSize: number = 10): Observable<ApiResponse<TimeRecord[]>> {
+  getTimeRecords(page: number = 1, pageSize: number = 10): Observable<ApiResponse<PagedResponse<TimeRecord>>> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
 
-    return this.http.get<ApiResponse<TimeRecord[]>>(this.API_URL, { params });
+    return this.http.get<ApiResponse<PagedResponse<TimeRecord>>>(this.API_URL, { params });
   }
 
   getTodayTimeRecords(): Observable<ApiResponse<TimeRecord[]>> {
