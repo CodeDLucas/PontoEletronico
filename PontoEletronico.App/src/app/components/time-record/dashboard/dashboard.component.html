@@ -109,16 +109,26 @@
           </div>
 
           <mat-table *ngIf="!isLoading && recentRecords.length > 0"
-                     [dataSource]="recentRecords" class="records-table">
+                     [dataSource]="dataSource" class="records-table">
             <ng-container matColumnDef="timestamp">
-              <mat-header-cell *matHeaderCellDef>Data/Hora</mat-header-cell>
+              <mat-header-cell *matHeaderCellDef
+                              class="sortable-header"
+                              (click)="sortTable('timestamp')">
+                Data/Hora
+                <mat-icon class="sort-icon">{{ getSortIcon('timestamp') }}</mat-icon>
+              </mat-header-cell>
               <mat-cell *matCellDef="let record">
                 {{ formatTimestamp(record.timestamp) }}
               </mat-cell>
             </ng-container>
 
             <ng-container matColumnDef="type">
-              <mat-header-cell *matHeaderCellDef>Tipo</mat-header-cell>
+              <mat-header-cell *matHeaderCellDef
+                              class="sortable-header"
+                              (click)="sortTable('type')">
+                Tipo
+                <mat-icon class="sort-icon">{{ getSortIcon('type') }}</mat-icon>
+              </mat-header-cell>
               <mat-cell *matCellDef="let record">
                 <mat-chip [ngClass]="getTypeColor(record.type)" selected>
                   {{ record.typeDescription }}
@@ -127,7 +137,12 @@
             </ng-container>
 
             <ng-container matColumnDef="description">
-              <mat-header-cell *matHeaderCellDef>Descrição</mat-header-cell>
+              <mat-header-cell *matHeaderCellDef
+                              class="sortable-header"
+                              (click)="sortTable('description')">
+                Comentário/Justificativa
+                <mat-icon class="sort-icon">{{ getSortIcon('description') }}</mat-icon>
+              </mat-header-cell>
               <mat-cell *matCellDef="let record">
                 {{ record.description || '-' }}
               </mat-cell>

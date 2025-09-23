@@ -5,6 +5,7 @@ import { interval, Subscription } from 'rxjs';
 import { AuthService, TimeRecordService, TimezoneService, NotificationService } from '../../../services';
 import { TimeRecord, TimeRecordType, PagedResponse } from '../../../models';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,6 +17,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   currentUser$ = this.authService.currentUser$;
   recentRecords: TimeRecord[] = [];
+  dataSource = new MatTableDataSource<TimeRecord>();
   isLoading = false;
   todayStatus: 'not_started' | 'working' | 'finished' = 'not_started';
 
@@ -31,6 +33,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Filter properties
   filterForm!: FormGroup;
+
+  // Sorting properties
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
 
   constructor(
     private authService: AuthService,
@@ -92,6 +98,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         next: (response) => {
           if (response.success && response.data) {
             this.recentRecords = response.data.data;
+            this.dataSource.data = this.recentRecords;
             this.totalRecords = response.data.totalCount;
             this.currentPage = response.data.page;
             this.pageSize = response.data.pageSize;
@@ -110,6 +117,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         next: (response) => {
           if (response.success && response.data) {
             this.recentRecords = response.data.data;
+            this.dataSource.data = this.recentRecords;
             this.totalRecords = response.data.totalCount;
             this.currentPage = response.data.page;
             this.pageSize = response.data.pageSize;
@@ -223,6 +231,62 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   formatDateOnly(timestamp: Date): string {
     return this.timezoneService.formatDateOnly(timestamp);
+  }
+
+  sortTable(column: string): void {
+    if (this.sortColumn === column) {
+      // Se clicou na mesma coluna, alterna a direção
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Se clicou em coluna diferente, define nova coluna e direção ascendente
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.applySorting();
+  }
+
+  private applySorting(): void {
+    if (!this.sortColumn) return;
+
+    const sortedData = [...this.recentRecords].sort((a, b) => {
+      let valueA: any;
+      let valueB: any;
+
+      switch (this.sortColumn) {
+        case 'timestamp':
+          valueA = new Date(a.timestamp).getTime();
+          valueB = new Date(b.timestamp).getTime();
+          break;
+        case 'type':
+          valueA = a.typeDescription || '';
+          valueB = b.typeDescription || '';
+          break;
+        case 'description':
+          valueA = a.description || '';
+          valueB = b.description || '';
+          break;
+        default:
+          return 0;
+      }
+
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+
+    this.dataSource.data = sortedData;
+  }
+
+  getSortIcon(column: string): string {
+    if (this.sortColumn !== column) {
+      return 'unfold_more';
+    }
+    return this.sortDirection === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down';
   }
 
 
