@@ -78,10 +78,9 @@ export class NotificationService {
       errorMessage = response.message;
     }
 
-    // Se houver erros específicos, adiciona eles à mensagem
+    // Erros específicos são mantidos apenas no console para debugging
     if (response.errors && response.errors.length > 0) {
-      const errorDetails = response.errors.join('; ');
-      errorMessage += ` Detalhes: ${errorDetails}`;
+      console.error('API Error Details:', response.errors);
     }
 
     this.showError(errorMessage);
@@ -94,20 +93,17 @@ export class NotificationService {
     let errorMessage = fallbackMessage || 'Erro de conexão. Tente novamente.';
 
     if (error?.error?.message) {
-      // Se o erro HTTP contém uma resposta da API estruturada
+      // Usa apenas a mensagem principal da API
       errorMessage = error.error.message;
 
+      // Detalhes técnicos ficam apenas no console para debugging
       if (error.error.errors && error.error.errors.length > 0) {
-        const errorDetails = error.error.errors.join('; ');
-        errorMessage += ` Detalhes: ${errorDetails}`;
+        console.error('HTTP Error Details:', error.error.errors);
       }
     } else if (error?.message) {
-      // Erro HTTP genérico
-      if (fallbackMessage) {
-        errorMessage = `${fallbackMessage} ${error.message}`;
-      } else {
-        errorMessage = error.message;
-      }
+      // Para erros HTTP genéricos, usa apenas o fallback sem detalhes técnicos
+      errorMessage = fallbackMessage || 'Erro de conexão. Tente novamente.';
+      console.error('HTTP Error:', error.message);
     }
 
     this.showError(errorMessage);
