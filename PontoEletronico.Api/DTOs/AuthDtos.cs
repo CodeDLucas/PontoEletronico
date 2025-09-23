@@ -23,9 +23,7 @@ public class RegisterRequestDto
     [EmailAddress(ErrorMessage = "Email deve ter um formato válido")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Código do funcionário é obrigatório")]
-    [StringLength(20, ErrorMessage = "Código do funcionário deve ter no máximo 20 caracteres")]
-    public string EmployeeCode { get; set; } = string.Empty;
+    public string? EmployeeCode { get; set; }
 
     [Required(ErrorMessage = "Senha é obrigatória")]
     [MinLength(6, ErrorMessage = "Senha deve ter pelo menos 6 caracteres")]

@@ -15,6 +15,14 @@ export class RegisterComponent implements OnInit {
   hidePassword = true;
   hideConfirmPassword = true;
 
+  // Password requirements checker
+  passwordRequirements = {
+    minLength: false,
+    hasLowerCase: false,
+    hasUpperCase: false,
+    hasNumber: false
+  };
+
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
@@ -30,10 +38,14 @@ export class RegisterComponent implements OnInit {
     this.registerForm = this.formBuilder.group({
       fullName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      employeeCode: ['', [Validators.required, Validators.minLength(2)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
+
+    // Listen to password changes to update requirements checker
+    this.registerForm.get('password')?.valueChanges.subscribe(password => {
+      this.updatePasswordRequirements(password || '');
+    });
   }
 
   passwordMatchValidator(form: FormGroup) {
@@ -58,7 +70,6 @@ export class RegisterComponent implements OnInit {
       const registerData: RegisterRequest = {
         fullName: this.registerForm.value.fullName,
         email: this.registerForm.value.email,
-        employeeCode: this.registerForm.value.employeeCode,
         password: this.registerForm.value.password,
         confirmPassword: this.registerForm.value.confirmPassword
       };
@@ -90,12 +101,6 @@ export class RegisterComponent implements OnInit {
     return '';
   }
 
-  getEmployeeCodeErrorMessage(): string {
-    const control = this.registerForm.get('employeeCode');
-    if (control?.hasError('required')) return 'Código do funcionário é obrigatório';
-    if (control?.hasError('minlength')) return 'Código deve ter pelo menos 2 caracteres';
-    return '';
-  }
 
   getEmailErrorMessage(): string {
     const control = this.registerForm.get('email');
@@ -120,6 +125,19 @@ export class RegisterComponent implements OnInit {
 
   navigateToLogin(): void {
     this.router.navigate(['/login']);
+  }
+
+  updatePasswordRequirements(password: string): void {
+    this.passwordRequirements = {
+      minLength: password.length >= 6,
+      hasLowerCase: /[a-z]/.test(password),
+      hasUpperCase: /[A-Z]/.test(password),
+      hasNumber: /\d/.test(password)
+    };
+  }
+
+  areAllPasswordRequirementsMet(): boolean {
+    return Object.values(this.passwordRequirements).every(req => req);
   }
 
 }

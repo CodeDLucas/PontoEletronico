@@ -1,21 +1,29 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { interval, Subscription } from 'rxjs';
 import { AuthService, TimeRecordService, TimezoneService, NotificationService } from '../../../services';
 import { TimeRecord, TimeRecordType, PagedResponse } from '../../../models';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   currentUser$ = this.authService.currentUser$;
   recentRecords: TimeRecord[] = [];
+  dataSource = new MatTableDataSource<TimeRecord>();
   isLoading = false;
   todayStatus: 'not_started' | 'working' | 'finished' = 'not_started';
+
+  // Clock properties
+  currentTime = new Date();
+  private timeSubscription?: Subscription;
 
   // Pagination properties
   pageSize = 10;
@@ -23,17 +31,46 @@ export class DashboardComponent implements OnInit {
   totalRecords = 0;
   showPagination = false;
 
+  // Filter properties
+  filterForm!: FormGroup;
+
+  // Sorting properties
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   constructor(
     private authService: AuthService,
     private timeRecordService: TimeRecordService,
     public timezoneService: TimezoneService,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private formBuilder: FormBuilder
   ) {}
 
   ngOnInit(): void {
+    this.initializeFilterForm();
+    this.startClock();
     this.loadRecentRecords(1, this.pageSize);
     this.checkTodayStatus();
+  }
+
+  ngOnDestroy(): void {
+    if (this.timeSubscription) {
+      this.timeSubscription.unsubscribe();
+    }
+  }
+
+  private initializeFilterForm(): void {
+    this.filterForm = this.formBuilder.group({
+      startDate: [null],
+      endDate: [null]
+    });
+  }
+
+  private startClock(): void {
+    this.timeSubscription = interval(1000).subscribe(() => {
+      this.currentTime = new Date();
+    });
   }
 
   onPageChange(event: PageEvent): void {
@@ -44,23 +81,57 @@ export class DashboardComponent implements OnInit {
 
   loadRecentRecords(page: number = 1, pageSize: number = 10): void {
     this.isLoading = true;
-    this.timeRecordService.getTimeRecords(page, pageSize).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.recentRecords = response.data.data;
-          this.totalRecords = response.data.totalCount;
-          this.currentPage = response.data.page;
-          this.pageSize = response.data.pageSize;
-          this.showPagination = response.data.totalCount > pageSize;
+
+    // Build filter from form
+    const startDate = this.filterForm?.get('startDate')?.value;
+    const endDate = this.filterForm?.get('endDate')?.value;
+
+    // Use default method but add filter parameters manually
+    if (startDate || endDate) {
+      // Create filter parameters and call the same getTimeRecords method
+      this.timeRecordService.getTimeRecordsWithDateFilter(
+        page,
+        pageSize,
+        startDate ? this.timezoneService.utcToDateString(startDate) : undefined,
+        endDate ? this.timezoneService.utcToDateString(endDate) : undefined
+      ).subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.recentRecords = response.data.data;
+            this.dataSource.data = this.recentRecords;
+            this.totalRecords = response.data.totalCount;
+            this.currentPage = response.data.page;
+            this.pageSize = response.data.pageSize;
+            this.showPagination = response.data.totalCount > pageSize;
+          }
+          this.isLoading = false;
+        },
+        error: (error: any) => {
+          console.error('Erro ao carregar registros filtrados:', error);
+          this.isLoading = false;
+          this.notificationService.handleHttpError(error, 'Erro ao carregar registros.');
         }
-        this.isLoading = false;
-      },
-      error: (error: any) => {
-        console.error('Erro ao carregar registros:', error);
-        this.isLoading = false;
-        this.notificationService.handleHttpError(error, 'Erro ao carregar registros.');
-      }
-    });
+      });
+    } else {
+      this.timeRecordService.getTimeRecords(page, pageSize).subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.recentRecords = response.data.data;
+            this.dataSource.data = this.recentRecords;
+            this.totalRecords = response.data.totalCount;
+            this.currentPage = response.data.page;
+            this.pageSize = response.data.pageSize;
+            this.showPagination = response.data.totalCount > pageSize;
+          }
+          this.isLoading = false;
+        },
+        error: (error: any) => {
+          console.error('Erro ao carregar registros:', error);
+          this.isLoading = false;
+          this.notificationService.handleHttpError(error, 'Erro ao carregar registros.');
+        }
+      });
+    }
   }
 
   checkTodayStatus(): void {
@@ -160,5 +231,76 @@ export class DashboardComponent implements OnInit {
 
   formatDateOnly(timestamp: Date): string {
     return this.timezoneService.formatDateOnly(timestamp);
+  }
+
+  sortTable(column: string): void {
+    if (this.sortColumn === column) {
+      // Se clicou na mesma coluna, alterna a direção
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Se clicou em coluna diferente, define nova coluna e direção ascendente
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.applySorting();
+  }
+
+  private applySorting(): void {
+    if (!this.sortColumn) return;
+
+    const sortedData = [...this.recentRecords].sort((a, b) => {
+      let valueA: any;
+      let valueB: any;
+
+      switch (this.sortColumn) {
+        case 'timestamp':
+          valueA = new Date(a.timestamp).getTime();
+          valueB = new Date(b.timestamp).getTime();
+          break;
+        case 'type':
+          valueA = a.typeDescription || '';
+          valueB = b.typeDescription || '';
+          break;
+        case 'description':
+          valueA = a.description || '';
+          valueB = b.description || '';
+          break;
+        default:
+          return 0;
+      }
+
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+
+    this.dataSource.data = sortedData;
+  }
+
+  getSortIcon(column: string): string {
+    if (this.sortColumn !== column) {
+      return 'unfold_more';
+    }
+    return this.sortDirection === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down';
+  }
+
+
+  applyFilters(): void {
+    this.currentPage = 1; // Reset to first page when applying filters
+    this.loadRecentRecords(1, this.pageSize);
+  }
+
+  clearFilters(): void {
+    this.filterForm.patchValue({
+      startDate: null,
+      endDate: null
+    });
+    this.currentPage = 1;
+    this.loadRecentRecords(1, this.pageSize);
   }
 }

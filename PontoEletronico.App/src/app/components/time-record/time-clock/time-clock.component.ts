@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { interval, Subscription } from 'rxjs';
 import { TimeRecordService, TimezoneService, NotificationService } from '../../../services';
 import { CreateTimeRecordRequest, TimeRecord, TimeRecordType } from '../../../models';
@@ -17,14 +18,19 @@ export class TimeClockComponent implements OnInit, OnDestroy {
   lastClockIn?: TimeRecord;
   private timeSubscription?: Subscription;
 
+  // Description form
+  descriptionForm!: FormGroup;
+
   constructor(
     private timeRecordService: TimeRecordService,
     public timezoneService: TimezoneService,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private formBuilder: FormBuilder
   ) {}
 
   ngOnInit(): void {
+    this.initializeForm();
     this.startClock();
     this.loadTodayRecord();
   }
@@ -33,6 +39,12 @@ export class TimeClockComponent implements OnInit, OnDestroy {
     if (this.timeSubscription) {
       this.timeSubscription.unsubscribe();
     }
+  }
+
+  private initializeForm(): void {
+    this.descriptionForm = this.formBuilder.group({
+      description: ['']
+    });
   }
 
   private startClock(): void {
@@ -83,15 +95,18 @@ export class TimeClockComponent implements OnInit, OnDestroy {
     if (this.isLoading || this.isWorking) return;
 
     this.isLoading = true;
+    const description = this.descriptionForm.get('description')?.value?.trim();
     const request: CreateTimeRecordRequest = {
       type: TimeRecordType.ClockIn,
-      timestamp: this.timezoneService.nowUtc()
+      timestamp: this.timezoneService.nowUtc(),
+      description: description || undefined
     };
 
     this.timeRecordService.createTimeRecord(request).subscribe({
       next: (response) => {
         if (response.success) {
           this.loadTodayRecord();
+          this.clearDescription();
           this.redirectToDashboard('Entrada registrada com sucesso!');
         } else {
           this.notificationService.handleErrorResponse(response, 'Erro ao registrar entrada. Tente novamente.');
@@ -110,15 +125,18 @@ export class TimeClockComponent implements OnInit, OnDestroy {
     if (this.isLoading || !this.isWorking) return;
 
     this.isLoading = true;
+    const description = this.descriptionForm.get('description')?.value?.trim();
     const request: CreateTimeRecordRequest = {
       type: TimeRecordType.ClockOut,
-      timestamp: this.timezoneService.nowUtc()
+      timestamp: this.timezoneService.nowUtc(),
+      description: description || undefined
     };
 
     this.timeRecordService.createTimeRecord(request).subscribe({
       next: (response) => {
         if (response.success) {
           this.loadTodayRecord();
+          this.clearDescription();
           this.redirectToDashboard('Saída registrada com sucesso!');
         } else {
           this.notificationService.handleErrorResponse(response, 'Erro ao registrar saída. Tente novamente.');
@@ -149,6 +167,12 @@ export class TimeClockComponent implements OnInit, OnDestroy {
   /**
    * Redireciona para o dashboard com delay e mensagem informativa
    */
+  private clearDescription(): void {
+    this.descriptionForm.patchValue({
+      description: ''
+    });
+  }
+
   private redirectToDashboard(successMessage: string): void {
     this.notificationService.showSuccessWithRedirect(
       successMessage,

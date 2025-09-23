@@ -6,7 +6,7 @@ export interface LoginRequest {
 export interface RegisterRequest {
   fullName: string;
   email: string;
-  employeeCode: string;
+  employeeCode?: string;
   password: string;
   confirmPassword: string;
 }
@@ -21,7 +21,7 @@ export interface UserProfile {
   id: string;
   fullName: string;
   email: string;
-  employeeCode: string;
+  employeeCode?: string;
   createdAt: string;
   isActive: boolean;
 }

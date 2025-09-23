@@ -49,6 +49,29 @@ export class TimeRecordService {
     return this.http.get<ApiResponse<PagedResponse<TimeRecord>>>(this.API_URL, { params });
   }
 
+  getTimeRecordsWithDateFilter(
+    page: number = 1,
+    pageSize: number = 10,
+    startDate?: string,
+    endDate?: string
+  ): Observable<ApiResponse<PagedResponse<TimeRecord>>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
+
+    if (startDate) {
+      // Converte data local para UTC antes de enviar para o backend
+      params = params.set('startDate', this.timezoneService.dateStringToUtc(startDate));
+    }
+
+    if (endDate) {
+      // Converte data local para UTC antes de enviar para o backend
+      params = params.set('endDate', this.timezoneService.dateStringToUtc(endDate));
+    }
+
+    return this.http.get<ApiResponse<PagedResponse<TimeRecord>>>(this.API_URL, { params });
+  }
+
   getTodayTimeRecords(): Observable<ApiResponse<TimeRecord[]>> {
     return this.http.get<ApiResponse<TimeRecord[]>>(`${this.API_URL}/today`);
   }

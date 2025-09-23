@@ -70,7 +70,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasMaxLength(100);
 
             entity.Property(e => e.EmployeeCode)
-                .IsRequired()
                 .HasMaxLength(20);
 
             entity.Property(e => e.CreatedAt)
@@ -81,9 +80,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .IsRequired()
                 .HasDefaultValue(true);
 
-            // Índice único para EmployeeCode
+            // Índice único para EmployeeCode (apenas quando não for nulo)
             entity.HasIndex(e => e.EmployeeCode)
-                .IsUnique();
+                .IsUnique()
+                .HasFilter("[EmployeeCode] IS NOT NULL");
         });
     }
 }

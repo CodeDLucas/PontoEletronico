@@ -33,35 +33,39 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
-          // For 401 errors, get more details from the response
+          // Usa mensagem limpa para usuários, detalhes ficam no console
           let message = 'Sessão expirada. Faça login novamente.';
           if (error.error?.message) {
-            message = `${message} ${error.error.message}`;
+            message = error.error.message;
           }
+          console.error('401 Unauthorized:', error);
           this.authService.logout();
           this.router.navigate(['/login']);
           this.notificationService.showError(message);
         } else if (error.status === 403) {
           let message = 'Acesso negado.';
           if (error.error?.message) {
-            message = `${message} ${error.error.message}`;
+            message = error.error.message;
           }
+          console.error('403 Forbidden:', error);
           this.notificationService.showError(message);
         } else if (error.status >= 500) {
           let message = 'Erro interno do servidor. Tente novamente mais tarde.';
           if (error.error?.message) {
-            message = `${message} Detalhes: ${error.error.message}`;
+            message = error.error.message;
           }
+          console.error('Server Error (5xx):', error);
           this.notificationService.showError(message);
         } else if (error.status === 0) {
           // Network error or CORS issue
           this.notificationService.showError('Erro de conexão. Verifique sua internet e tente novamente.');
         } else if (error.status >= 400 && error.status < 500) {
           // Other client errors
-          let message = `Erro na requisição (${error.status}).`;
+          let message = 'Erro na requisição. Verifique os dados e tente novamente.';
           if (error.error?.message) {
-            message = `${message} ${error.error.message}`;
+            message = error.error.message;
           }
+          console.error(`Client Error (${error.status}):`, error);
           this.notificationService.showError(message);
         }
 

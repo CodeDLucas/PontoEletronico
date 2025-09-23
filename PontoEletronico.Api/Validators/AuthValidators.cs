@@ -32,9 +32,9 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequestDto>
             .MaximumLength(256).WithMessage("Email deve ter no máximo 256 caracteres");
 
         RuleFor(x => x.EmployeeCode)
-            .NotEmpty().WithMessage("Código do funcionário é obrigatório")
             .MaximumLength(20).WithMessage("Código do funcionário deve ter no máximo 20 caracteres")
-            .Matches(@"^[a-zA-Z0-9]+$").WithMessage("Código do funcionário deve conter apenas letras e números");
+            .Matches(@"^[a-zA-Z0-9]*$").WithMessage("Código do funcionário deve conter apenas letras e números")
+            .When(x => !string.IsNullOrEmpty(x.EmployeeCode));
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Senha é obrigatória")

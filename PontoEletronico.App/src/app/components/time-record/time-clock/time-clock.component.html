@@ -14,7 +14,7 @@
             {{ currentTime | date:'HH:mm:ss' }}
           </div>
           <div class="date-display">
-            {{ currentTime | date:'EEEE, dd/MM/yyyy':'pt-BR' }}
+            {{ currentTime | date:'EEEE, dd/MM/yyyy' }}
           </div>
         </div>
 
@@ -36,6 +36,21 @@
               </div>
             </mat-card-content>
           </mat-card>
+        </div>
+
+        <!-- Description Section -->
+        <div class="description-section">
+          <form [formGroup]="descriptionForm">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Descrição (opcional)</mat-label>
+              <textarea matInput
+                        formControlName="description"
+                        placeholder="Descreva sua atividade..."
+                        rows="5"
+                        maxlength="200"></textarea>
+              <mat-hint self-align="end">{{ descriptionForm.get('description')?.value?.length || 0 }}/200</mat-hint>
+            </mat-form-field>
+          </form>
         </div>
 
         <div class="actions-section">
@@ -67,7 +82,7 @@
             <mat-card-content>
               <div class="info-message">
                 <mat-icon>info</mat-icon>
-                <p>Toque no botão acima para registrar sua entrada</p>
+                <p>Adicione uma descrição (opcional) depois toque no botão acima para registrar sua entrada</p>
               </div>
             </mat-card-content>
           </mat-card>

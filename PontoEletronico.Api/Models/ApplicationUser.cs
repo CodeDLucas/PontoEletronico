@@ -9,9 +9,8 @@ public class ApplicationUser : IdentityUser
     [MaxLength(100)]
     public string FullName { get; set; } = string.Empty;
 
-    [Required]
     [MaxLength(20)]
-    public string EmployeeCode { get; set; } = string.Empty;
+    public string? EmployeeCode { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

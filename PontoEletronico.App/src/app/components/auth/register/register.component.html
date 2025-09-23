@@ -1,6 +1,6 @@
 <div class="register-container">
   <mat-card class="register-card">
-    <mat-card-header>
+    <mat-card-header style="align-self: center;">
       <mat-card-title>Criar Conta</mat-card-title>
       <mat-card-subtitle>Registre-se para acessar o sistema</mat-card-subtitle>
     </mat-card-header>
@@ -14,12 +14,6 @@
           <mat-error>{{ getFullNameErrorMessage() }}</mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Código do Funcionário</mat-label>
-          <input matInput formControlName="employeeCode" placeholder="Digite seu código de funcionário">
-          <mat-icon matSuffix>badge</mat-icon>
-          <mat-error>{{ getEmployeeCodeErrorMessage() }}</mat-error>
-        </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Email</mat-label>
@@ -42,6 +36,27 @@
           </button>
           <mat-error>{{ getPasswordErrorMessage() }}</mat-error>
         </mat-form-field>
+
+        <!-- Password Requirements Checker -->
+        <div class="password-requirements" *ngIf="registerForm.get('password')?.value || registerForm.get('password')?.touched">
+          <h4>Sua senha deve conter:</h4>
+          <div class="requirement" [class.met]="passwordRequirements.minLength">
+            <mat-icon>{{ passwordRequirements.minLength ? 'check_circle' : 'cancel' }}</mat-icon>
+            <span>Pelo menos 6 caracteres</span>
+          </div>
+          <div class="requirement" [class.met]="passwordRequirements.hasLowerCase">
+            <mat-icon>{{ passwordRequirements.hasLowerCase ? 'check_circle' : 'cancel' }}</mat-icon>
+            <span>Uma letra minúscula (a-z)</span>
+          </div>
+          <div class="requirement" [class.met]="passwordRequirements.hasUpperCase">
+            <mat-icon>{{ passwordRequirements.hasUpperCase ? 'check_circle' : 'cancel' }}</mat-icon>
+            <span>Uma letra maiúscula (A-Z)</span>
+          </div>
+          <div class="requirement" [class.met]="passwordRequirements.hasNumber">
+            <mat-icon>{{ passwordRequirements.hasNumber ? 'check_circle' : 'cancel' }}</mat-icon>
+            <span>Um número (0-9)</span>
+          </div>
+        </div>
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Confirmar Senha</mat-label>
@@ -70,7 +85,7 @@
       </form>
     </mat-card-content>
 
-    <mat-card-actions style="text-align: center;">
+    <mat-card-actions style="text-align: center; align-self:center;">
       <p>
         Já possui uma conta?
         <button mat-button color="primary" (click)="navigateToLogin()">
