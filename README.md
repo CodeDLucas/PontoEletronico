@@ -48,7 +48,7 @@ Sistema completo de controle de ponto eletrônico desenvolvido com Angular 15 e 
 
 ### 1. Clone do Repositório
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/CodeDLucas/PontoEletronico.git
 cd PontoEletronico
 ```
 
