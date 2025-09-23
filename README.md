@@ -45,6 +45,7 @@ Sistema completo de controle de ponto eletrônico desenvolvido com Angular 15 e 
 - Servidor web (IIS, Nginx, ou similar)
 
 ## Configuração e Instalação
+Para rodar este projeto, você precisará de **duas janelas de prompt de comando separadas**: uma para o backend e outra para o frontend. Ambos os servidores precisam estar rodando simultaneamente para que a aplicação funcione.
 
 ### 1. Clone do Repositório
 ```bash
