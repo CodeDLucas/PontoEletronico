@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { interval, Subscription } from 'rxjs';
 import { AuthService, TimeRecordService, TimezoneService, NotificationService } from '../../../services';
 import { TimeRecord, TimeRecordType, PagedResponse } from '../../../models';
@@ -28,15 +29,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   totalRecords = 0;
   showPagination = false;
 
+  // Filter properties
+  filterForm!: FormGroup;
+
   constructor(
     private authService: AuthService,
     private timeRecordService: TimeRecordService,
     public timezoneService: TimezoneService,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private formBuilder: FormBuilder
   ) {}
 
   ngOnInit(): void {
+    this.initializeFilterForm();
     this.startClock();
     this.loadRecentRecords(1, this.pageSize);
     this.checkTodayStatus();
@@ -46,6 +52,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.timeSubscription) {
       this.timeSubscription.unsubscribe();
     }
+  }
+
+  private initializeFilterForm(): void {
+    this.filterForm = this.formBuilder.group({
+      startDate: [null],
+      endDate: [null]
+    });
   }
 
   private startClock(): void {
@@ -62,23 +75,55 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   loadRecentRecords(page: number = 1, pageSize: number = 10): void {
     this.isLoading = true;
-    this.timeRecordService.getTimeRecords(page, pageSize).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.recentRecords = response.data.data;
-          this.totalRecords = response.data.totalCount;
-          this.currentPage = response.data.page;
-          this.pageSize = response.data.pageSize;
-          this.showPagination = response.data.totalCount > pageSize;
+
+    // Build filter from form
+    const startDate = this.filterForm?.get('startDate')?.value;
+    const endDate = this.filterForm?.get('endDate')?.value;
+
+    // Use default method but add filter parameters manually
+    if (startDate || endDate) {
+      // Create filter parameters and call the same getTimeRecords method
+      this.timeRecordService.getTimeRecordsWithDateFilter(
+        page,
+        pageSize,
+        startDate ? this.timezoneService.utcToDateString(startDate) : undefined,
+        endDate ? this.timezoneService.utcToDateString(endDate) : undefined
+      ).subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.recentRecords = response.data.data;
+            this.totalRecords = response.data.totalCount;
+            this.currentPage = response.data.page;
+            this.pageSize = response.data.pageSize;
+            this.showPagination = response.data.totalCount > pageSize;
+          }
+          this.isLoading = false;
+        },
+        error: (error: any) => {
+          console.error('Erro ao carregar registros filtrados:', error);
+          this.isLoading = false;
+          this.notificationService.handleHttpError(error, 'Erro ao carregar registros.');
         }
-        this.isLoading = false;
-      },
-      error: (error: any) => {
-        console.error('Erro ao carregar registros:', error);
-        this.isLoading = false;
-        this.notificationService.handleHttpError(error, 'Erro ao carregar registros.');
-      }
-    });
+      });
+    } else {
+      this.timeRecordService.getTimeRecords(page, pageSize).subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.recentRecords = response.data.data;
+            this.totalRecords = response.data.totalCount;
+            this.currentPage = response.data.page;
+            this.pageSize = response.data.pageSize;
+            this.showPagination = response.data.totalCount > pageSize;
+          }
+          this.isLoading = false;
+        },
+        error: (error: any) => {
+          console.error('Erro ao carregar registros:', error);
+          this.isLoading = false;
+          this.notificationService.handleHttpError(error, 'Erro ao carregar registros.');
+        }
+      });
+    }
   }
 
   checkTodayStatus(): void {
@@ -178,5 +223,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   formatDateOnly(timestamp: Date): string {
     return this.timezoneService.formatDateOnly(timestamp);
+  }
+
+
+  applyFilters(): void {
+    this.currentPage = 1; // Reset to first page when applying filters
+    this.loadRecentRecords(1, this.pageSize);
+  }
+
+  clearFilters(): void {
+    this.filterForm.patchValue({
+      startDate: null,
+      endDate: null
+    });
+    this.currentPage = 1;
+    this.loadRecentRecords(1, this.pageSize);
   }
 }

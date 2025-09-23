@@ -56,6 +56,49 @@
           </mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
+          <!-- Filters Section -->
+          <div class="filters-section">
+            <form [formGroup]="filterForm" class="filters-form">
+              <div class="filter-row">
+                <mat-form-field appearance="outline" class="date-field">
+                  <mat-label>Data Início</mat-label>
+                  <input matInput
+                         [matDatepicker]="startPicker"
+                         formControlName="startDate"
+                         placeholder="Selecione a data inicial">
+                  <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #startPicker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="date-field">
+                  <mat-label>Data Final</mat-label>
+                  <input matInput
+                         [matDatepicker]="endPicker"
+                         formControlName="endDate"
+                         placeholder="Selecione a data final">
+                  <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #endPicker></mat-datepicker>
+                </mat-form-field>
+
+                <div class="filter-actions">
+                  <button mat-raised-button
+                          color="primary"
+                          (click)="applyFilters()"
+                          [disabled]="isLoading">
+                    <mat-icon>search</mat-icon>
+                    Filtrar
+                  </button>
+                  <button mat-button
+                          (click)="clearFilters()"
+                          [disabled]="isLoading">
+                    <mat-icon>clear</mat-icon>
+                    Limpar
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
           <div *ngIf="isLoading" class="loading-spinner">
             <mat-spinner diameter="40"></mat-spinner>
           </div>

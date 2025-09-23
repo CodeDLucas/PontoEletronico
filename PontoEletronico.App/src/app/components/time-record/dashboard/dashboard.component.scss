@@ -133,6 +133,46 @@
   color: #666;
 }
 
+// Filters Section Styles
+.filters-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+
+  .filters-form {
+    .filter-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+
+      .date-field {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .filter-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+
+        button {
+          height: 40px;
+
+          mat-icon {
+            margin-right: 4px;
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+          }
+        }
+      }
+    }
+  }
+}
+
 // Cores customizadas para tipos de marcação
 ::ng-deep .mat-mdc-chip.clock-in {
   --mdc-chip-label-text-color: #618eca !important;
@@ -234,5 +274,29 @@
   .user-info {
     margin-right: 8px;
     font-size: 14px;
+  }
+
+  .filters-section {
+    padding: 16px;
+
+    .filters-form .filter-row {
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+
+      .date-field {
+        min-width: auto;
+        width: 100%;
+      }
+
+      .filter-actions {
+        justify-content: center;
+
+        button {
+          flex: 1;
+          max-width: 120px;
+        }
+      }
+    }
   }
 }
