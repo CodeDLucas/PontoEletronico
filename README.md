@@ -10,7 +10,7 @@ Full-stack time-tracking application built with **Angular 15** and **.NET 6**, b
 
 | Login | Dashboard and history |
 | --- | --- |
-| ![Login screen](docs/screenshots/login.png) | ![Dashboard with daily status and time records](docs/screenshots/dashboard.png) |
+| ![Login screen](login.png) | ![Dashboard with daily status and time records](dashboard.png) |
 
 ## Table of Contents
 
