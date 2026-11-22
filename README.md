@@ -1,62 +1,107 @@
-# Sistema de Ponto Eletrônico
+🇺🇸 English | [🇧🇷 Português](README.pt-BR.md)
 
-Sistema completo de controle de ponto eletrônico desenvolvido com Angular 15 e .NET 6, permitindo que funcionários registrem e consultem suas marcações de forma segura e intuitiva.
+# Electronic Time Clock System (Ponto Eletrônico)
 
-## Índice
+Full-stack time-tracking application built with **Angular 15** and **.NET 6**, built as a technical challenge. Employees can clock in and out and review their history through a secure, simple interface.
 
-- [Pré-requisitos](#pré-requisitos)
-- [Configuração e Instalação](#configuração-e-instalação)
-  - [1. Clone do Repositório](#1-clone-do-repositório)
-  - [2. Configuração do Backend](#2-configuração-do-backend)
-  - [3. Configuração do Frontend](#3-configuração-do-frontend)
-- [Funcionalidades](#funcionalidades)
-  - [Autenticação e Segurança](#autenticação-e-segurança)
-  - [Registro de Ponto](#registro-de-ponto)
-  - [Visualização e Consulta](#visualização-e-consulta)
-- [Arquitetura](#arquitetura)
-  - [Backend (.NET 6)](#backend-net-6)
-  - [Frontend (Angular 15)](#frontend-angular-15)
-- [Estrutura do Projeto](#estrutura-do-projeto)
+> **Note:** the user interface is in Brazilian Portuguese.
+
+## Screenshots
+
+| Login | Dashboard and history |
+| --- | --- |
+| ![Login screen](docs/screenshots/login.png) | ![Dashboard with daily status and time records](docs/screenshots/dashboard.png) |
+
+## Table of Contents
+
+- [Features](#features)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
 - [API Endpoints](#api-endpoints)
-  - [Autenticação](#autenticação)
-  - [Registros de Ponto](#registros-de-ponto)
-  - [Usuários](#usuários)
-- [Documentação da API](#documentação-da-api)
-- [Banco de Dados](#banco-de-dados)
-- [Segurança](#segurança)
-- [Tecnologias Utilizadas](#tecnologias-utilizadas)
-- [Configuração para Produção](#configuração-para-produção)
-- [Desenvolvimento](#desenvolvimento)
-- [Contribuição](#contribuição)
-- [Licença](#licença)
-- [Suporte](#suporte)
+- [Data Model](#data-model)
+- [Security](#security)
+- [Tech Stack](#tech-stack)
+- [Production Setup](#production-setup)
+- [Possible Improvements](#possible-improvements)
+- [License](#license)
 
-## Pré-requisitos
+## Features
 
-### Desenvolvimento
+**Authentication and security**
+- JWT-based login and user registration
+- Session control with automatic token renewal
+- Secure logout
+- Route protection with Angular guards
+
+**Time tracking**
+- Clock in and clock out with automatic date and time
+- Optional description for each record (the data model also supports break start/end types)
+
+**Viewing and querying**
+- Dashboard with the real-time status of the day and a live digital clock
+- Full history of time records
+- Date range filters, pagination and column sorting (date/time, type, description)
+
+## Architecture
+
+**Backend (.NET 6)**
+- REST API with ASP.NET Core 6
+- Authentication with ASP.NET Identity and JWT Bearer
+- SQL Server with Entity Framework Core (code-first migrations)
+- Input validation with FluentValidation
+- Interactive API documentation with Swagger/OpenAPI
+
+**Frontend (Angular 15)**
+- Angular 15.2 with Angular Material
+- JWT handling through HTTP interceptors
+- Reactive forms with validation
+- Responsive layout for desktop and mobile
+
+## Project Structure
+
+```
+PontoEletronico/
+├── PontoEletronico.Api/          # Backend (.NET 6)
+│   ├── Controllers/              # API endpoints
+│   ├── Services/                 # Business logic
+│   ├── Models/                   # Domain models
+│   ├── DTOs/                     # Data transfer objects
+│   ├── Data/                     # Database context
+│   ├── Validators/               # FluentValidation rules
+│   ├── Middleware/               # Custom middleware
+│   └── Migrations/               # EF Core migrations
+├── PontoEletronico.App/          # Frontend (Angular)
+│   ├── src/app/components/       # UI components
+│   ├── src/app/services/         # Angular services
+│   ├── src/app/models/           # TypeScript interfaces
+│   ├── src/app/interceptors/     # HTTP interceptors
+│   ├── src/app/guards/           # Route guards
+│   └── src/assets/               # Static assets
+└── README.md
+```
+
+## Getting Started
+
+### Prerequisites
+
 - [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
 - [Node.js 16+](https://nodejs.org/)
 - [Angular CLI 15+](https://angular.io/cli)
-- [SQL Server LocalDB](https://docs.microsoft.com/sql/database-engine/configure-windows/sql-server-express-localdb) ou SQL Server
+- [SQL Server LocalDB](https://docs.microsoft.com/sql/database-engine/configure-windows/sql-server-express-localdb) or SQL Server
 
-### Produção
-- Servidor com .NET 6 Runtime
-- SQL Server 2019+ ou Azure SQL Database
-- Servidor web (IIS, Nginx, ou similar)
+You need **two terminal windows**, one for the backend and one for the frontend. Both must be running at the same time.
 
-## Configuração e Instalação
-Para rodar este projeto, você precisará de **duas janelas de prompt de comando separadas**: uma para o backend e outra para o frontend. Ambos os servidores precisam estar rodando simultaneamente para que a aplicação funcione.
+### 1. Clone the repository
 
-### 1. Clone do Repositório
 ```bash
 git clone https://github.com/CodeDLucas/PontoEletronico.git
 cd PontoEletronico
 ```
 
-### 2. Configuração do Backend
+### 2. Backend
 
-#### 2.1 Configurar Connection String
-Edite o arquivo `PontoEletronico.Api/appsettings.json`:
+Edit `PontoEletronico.Api/appsettings.json`:
 
 ```json
 {
@@ -64,7 +109,7 @@ Edite o arquivo `PontoEletronico.Api/appsettings.json`:
     "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=PontoEletronicoDb;Trusted_Connection=true;MultipleActiveResultSets=true"
   },
   "JwtSettings": {
-    "SecretKey": "SUA_CHAVE_SECRETA_AQUI_MINIMO_32_CARACTERES",
+    "SecretKey": "YOUR_SECRET_KEY_AT_LEAST_32_CHARACTERS",
     "Issuer": "PontoEletronicoAPI",
     "Audience": "PontoEletronicoApp",
     "ExpirationMinutes": 60
@@ -72,30 +117,25 @@ Edite o arquivo `PontoEletronico.Api/appsettings.json`:
 }
 ```
 
-#### 2.2 Configurar Banco de Dados
+Create the database and run the API:
+
 ```bash
 cd PontoEletronico.Api
 dotnet ef database update
-```
-
-#### 2.3 Executar API
-```bash
-cd PontoEletronico.Api
 dotnet run
 ```
 
-A API estará disponível em: `https://localhost:7059`
+The API runs at `https://localhost:7059` and the Swagger UI is available at `https://localhost:7059/swagger`.
 
-### 3. Configuração do Frontend
+### 3. Frontend
 
-#### 3.1 Instalar Dependências
 ```bash
 cd PontoEletronico.App
 npm install
+ng serve
 ```
 
-#### 3.2 Configurar Environment
-Verifique se o arquivo `src/environments/environment.ts` aponta para a API:
+Make sure `src/environments/environment.ts` points to the API:
 
 ```typescript
 export const environment = {
@@ -104,230 +144,76 @@ export const environment = {
 };
 ```
 
-#### 3.3 Executar Frontend
-```bash
-ng serve
-```
-
-A aplicação estará disponível em: `http://localhost:4200`
-
-## Funcionalidades
-
-### Autenticação e Segurança
-- Login seguro com JWT (JSON Web Tokens)
-- Registro de novos usuários
-- Controle de sessão e renovação automática de tokens
-- Logout seguro
-- Proteção de rotas com guards
-
-### Registro de Ponto
-- Marcação de entrada (Clock In)
-- Marcação de saída (Clock Out)
-- Registro automático de data e hora
-- Descrições opcionais para cada marcação
-
-### Visualização e Consulta
-- Dashboard com status do dia em tempo real
-- Histórico completo de marcações
-- Filtros por período (data início/fim)
-- Paginação de resultados
-- Ordenação por colunas (data/hora, tipo, descrição)
-- Relógio digital em tempo real
-
-## Arquitetura
-
-### Backend (.NET 6)
-- **API REST** com ASP.NET Core 6
-- **Autenticação** via ASP.NET Identity
-- **Banco de dados** SQL Server com Entity Framework Core
-- **Validação** com FluentValidation
-- **Documentação** automática com Swagger/OpenAPI
-
-### Frontend (Angular 15)
-- **Framework** Angular 15.2.0
-- **UI Components** Angular Material Design
-- **Autenticação** JWT com interceptors
-- **Formulários** reativos com validação
-- **Responsivo** para desktop e mobile
-
-## Estrutura do Projeto
-
-```
-PontoEletronico/
-├── PontoEletronico.Api/          # Backend .NET 6
-│   ├── Controllers/              # Endpoints da API
-│   ├── Services/                 # Lógica de negócio
-│   ├── Models/                   # Modelos de dados
-│   ├── DTOs/                     # Data Transfer Objects
-│   ├── Data/                     # Contexto do banco
-│   ├── Validators/               # Validações FluentValidation
-│   ├── Middleware/               # Middlewares customizados
-│   └── Migrations/               # Migrações do banco
-├── PontoEletronico.App/          # Frontend Angular
-│   ├── src/app/components/       # Componentes da aplicação
-│   ├── src/app/services/         # Serviços Angular
-│   ├── src/app/models/           # Interfaces TypeScript
-│   ├── src/app/interceptors/     # Interceptors HTTP
-│   ├── src/app/guards/           # Route Guards
-│   └── src/assets/               # Recursos estáticos
-└── README.md                     # Este arquivo
-```
+The app runs at `http://localhost:4200`.
 
 ## API Endpoints
 
-### Autenticação
-- `POST /api/auth/login` - Realizar login
-- `POST /api/auth/register` - Registrar novo usuário
-- `POST /api/auth/logout` - Realizar logout
-- `POST /api/auth/refresh` - Renovar token
-- `GET /api/auth/verify` - Verificar token
+**Authentication**
+- `POST /api/auth/login` - Log in
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/logout` - Log out
+- `POST /api/auth/refresh` - Renew the token
+- `GET /api/auth/verify` - Verify the token
 
-### Registros de Ponto
-- `POST /api/timerecord` - Criar nova marcação
-- `GET /api/timerecord` - Listar marcações (com filtros)
-- `GET /api/timerecord/{id}` - Obter marcação específica
-- `GET /api/timerecord/today` - Marcações do dia atual
-- `GET /api/timerecord/summary` - Resumo agrupado por dia
-- `DELETE /api/timerecord/{id}` - Remover marcação
+**Time records**
+- `POST /api/timerecord` - Create a record
+- `GET /api/timerecord` - List records (with filters)
+- `GET /api/timerecord/{id}` - Get a record
+- `GET /api/timerecord/today` - Records of the current day
+- `GET /api/timerecord/summary` - Summary grouped by day
+- `DELETE /api/timerecord/{id}` - Delete a record
 
-### Usuários
-- `GET /api/user/profile` - Obter perfil do usuário
-- `PUT /api/user/profile` - Atualizar perfil
-- `POST /api/user/change-password` - Alterar senha
+**Users**
+- `GET /api/user/profile` - Get the profile
+- `PUT /api/user/profile` - Update the profile
+- `POST /api/user/change-password` - Change the password
 
-## Documentação da API
+## Data Model
 
-Após executar o backend, acesse a documentação interativa Swagger em:
-`https://localhost:7059/swagger`
+**ApplicationUser**
+- `Id` (string), `FullName` (string), `Email` (string, unique)
+- `EmployeeCode` (string, optional)
+- `CreatedAt` (DateTime), `IsActive` (bool)
 
-## Banco de Dados
+**TimeRecord**
+- `Id` (int), `UserId` (string, FK to ApplicationUser)
+- `Timestamp` (DateTime)
+- `Type` (enum: ClockIn / ClockOut / BreakStart / BreakEnd)
+- `Description` (string, optional), `CreatedAt` (DateTime)
 
-### Modelo de Dados
+## Security
 
-#### ApplicationUser
-- Id (string) - Identificador único
-- FullName (string) - Nome completo
-- Email (string) - Email único
-- EmployeeCode (string, opcional) - Código do funcionário
-- CreatedAt (DateTime) - Data de criação
-- IsActive (bool) - Status ativo/inativo
+- **HTTPS** redirection enforced
+- **JWT** tokens with configurable expiration
+- **CORS** restricted to allowed origins
+- **Validation** on both client and server
+- **SQL injection** prevention through parameterized queries (Entity Framework)
+- **Authorization** by authenticated user
+- **Password policy:** at least 6 characters, with lowercase, uppercase and a digit; account lockout after 5 failed attempts
 
-#### TimeRecord
-- Id (int) - Identificador único
-- UserId (string) - FK para ApplicationUser
-- Timestamp (DateTime) - Data/hora da marcação
-- Type (enum) - Tipo da marcação (ClockIn/ClockOut/BreakStart/BreakEnd)
-- Description (string, opcional) - Descrição da marcação
-- CreatedAt (DateTime) - Data de criação do registro
+## Tech Stack
 
-## Segurança
+**Backend:** .NET 6, ASP.NET Core Web API, Entity Framework Core 6.0.33, ASP.NET Identity, FluentValidation 11.3.0, JWT Bearer Authentication, SQL Server, Swagger/OpenAPI
 
-### Medidas Implementadas
-- **HTTPS**: Redirecionamento forçado para conexões seguras
-- **JWT**: Tokens seguros com expiração configurável
-- **CORS**: Configuração específica para domínios permitidos
-- **Validação**: Input validation client-side e server-side
-- **SQL Injection**: Prevenção via Entity Framework parametrizado
-- **Autorização**: Controle de acesso por usuário autenticado
+**Frontend:** Angular 15.2.0, Angular Material 15.2.9, TypeScript 4.9.4, RxJS 7.8.0, SCSS
 
-### Configurações de Senha
-- Mínimo 6 caracteres
-- Pelo menos uma letra minúscula
-- Pelo menos uma letra maiúscula
-- Pelo menos um número
-- Bloqueio após 5 tentativas incorretas
+## Production Setup
 
-## Tecnologias Utilizadas
+**Backend**
+1. Create `appsettings.Production.json` with the production connection string, a unique and secure JWT key, and logging settings.
+2. Configure CORS for the production domain.
 
-### Backend
-- .NET 6
-- ASP.NET Core Web API
-- Entity Framework Core 6.0.33
-- ASP.NET Identity
-- FluentValidation 11.3.0
-- JWT Bearer Authentication
-- SQL Server
-- Swagger/OpenAPI
+**Frontend**
+1. Set the production API URL in `environment.prod.ts`.
+2. Build with `ng build --configuration=production` and serve the files in `dist/`.
 
-### Frontend
-- Angular 15.2.0
-- Angular Material 15.2.9
-- TypeScript 4.9.4
-- RxJS 7.8.0
-- SCSS
-- Angular CLI
+## Possible Improvements
 
-## Configuração para Produção
+- Automated tests (unit and integration)
+- CI pipeline
+- Upgrade to current LTS versions of .NET and Angular
+- Containerization with Docker
 
-### Backend
-1. Atualizar `appsettings.Production.json` com:
-   - Connection string para SQL Server de produção
-   - Chave JWT segura e única
-   - Configurações de logging apropriadas
+## License
 
-2. Configurar CORS para domínio de produção
-
-### Frontend
-1. Atualizar `environment.prod.ts` com URL da API de produção
-2. Executar build de produção: `ng build --configuration=production`
-3. Servir arquivos estáticos gerados em `dist/`
-
-## Desenvolvimento
-
-### Comandos Úteis
-
-#### Backend
-```bash
-# Restaurar pacotes
-dotnet restore
-
-# Executar testes
-dotnet test
-
-# Criar nova migration
-dotnet ef migrations add NomeDaMigration
-
-# Atualizar banco
-dotnet ef database update
-
-# Executar em modo desenvolvimento
-dotnet run --environment Development
-```
-
-#### Frontend
-```bash
-# Instalar dependências
-npm install
-
-# Executar em modo desenvolvimento
-ng serve
-
-# Executar testes
-ng test
-
-# Build de produção
-ng build --configuration=production
-
-# Análise de bundle
-ng build --stats-json
-npx webpack-bundle-analyzer dist/ponto-eletronico-app/stats.json
-```
-
-## Contribuição
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -am 'Adiciona nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
-
-## Licença
-
-Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE.txt](LICENSE.txt) para detalhes.
-
-## Suporte
-
-Para questões relacionadas ao desenvolvimento ou configuração, consulte:
-- Documentação da API: `https://localhost:7059/swagger`
-- Logs da aplicação: Console do navegador (F12)
-- Logs do servidor: Output do terminal onde o backend está executando
+This project is licensed under the MIT License. See [LICENSE.txt](LICENSE.txt) for details.
